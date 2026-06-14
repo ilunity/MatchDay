@@ -10,11 +10,9 @@ import { UserBadge } from "@/components/user-badge";
 export async function Header() {
   const session = await auth();
   const guestName = session ? undefined : await getGuestName();
-  const welcomeText = session?.user?.name?.trim()
-    ? `${ru.welcomeUser} ${session.user.name.trim()}`
-    : guestName?.trim()
-      ? `${ru.welcomeGuest} ${guestName.trim()}`
-      : undefined;
+  const welcomeText = guestName?.trim()
+    ? `${ru.welcomeGuest} ${guestName.trim()}`
+    : undefined;
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

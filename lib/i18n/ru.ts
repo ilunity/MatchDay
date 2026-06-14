@@ -93,6 +93,10 @@ export const ru = {
   authErrorDefault: "Не удалось выполнить вход. Попробуйте снова.",
   tryLoginAgain: "Попробовать снова",
   magicLinkEmailSubject: "Вход в MatchDay",
+  magicLinkEmailIntro: "Нажмите кнопку, чтобы войти в MatchDay:",
+  magicLinkEmailButton: "Войти в MatchDay",
+  magicLinkEmailExpire: "Ссылка действует ограниченное время.",
+  magicLinkEmailFallback: "Если кнопка не открывается, скопируйте ссылку:",
   magicLinkEmailText: (url: string) =>
     `Перейдите по ссылке, чтобы войти в MatchDay:\n\n${url}\n\nСсылка действует ограниченное время.`,
   loading: "Загрузка...",
