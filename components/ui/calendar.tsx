@@ -31,8 +31,10 @@ const CALENDAR_SIZES = {
     dayCell: "size-full p-0",
     dayColumn: "h-[42px] p-0",
     weekdayCell: "h-8 p-0",
+    dayBox: "size-[42px]",
     gridWidth: "w-[294px]",
-    cssVars: "[--rdp-day-height:42px] [--rdp-weekday-padding:0]",
+    cssVars:
+      "[--rdp-day-height:42px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
     dayNumber: "text-sm",
     participantCount: "text-[0.65rem]",
     weekday: "text-[0.8rem]",
@@ -41,8 +43,10 @@ const CALENDAR_SIZES = {
     dayCell: "size-full p-0",
     dayColumn: "h-[71px] p-0",
     weekdayCell: "h-8 p-0",
+    dayBox: "size-[42px]",
     gridWidth: "w-[497px]",
-    cssVars: "[--rdp-day-height:71px] [--rdp-weekday-padding:0]",
+    cssVars:
+      "[--rdp-day-height:71px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
     dayNumber: "text-base",
     participantCount: "text-xs",
     weekday: "text-sm",
@@ -250,6 +254,20 @@ function createPossibleDatesDropdowns(
   return { MonthsDropdown, YearsDropdown };
 }
 
+function createDayCell(dayBox: string) {
+  function Day({ children, className, ...props }: React.ComponentProps<"td">) {
+    return (
+      <td className={className} {...props}>
+        <span className={cn("inline-flex items-center justify-center", dayBox)}>
+          {children}
+        </span>
+      </td>
+    );
+  }
+
+  return Day;
+}
+
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   size?: CalendarSize;
   possibleDates?: Date[];
@@ -278,7 +296,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
-  const { dayColumn, weekdayCell, gridWidth, cssVars, weekday } =
+  const { dayColumn, weekdayCell, dayBox, gridWidth, cssVars, weekday } =
     CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
   const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);
@@ -313,6 +331,7 @@ function Calendar({
     () => createMonthNavButtons(monthsWithPossible),
     [monthsWithPossible]
   );
+  const Day = React.useMemo(() => createDayCell(dayBox), [dayBox]);
 
   return (
     <DayPicker
@@ -372,7 +391,7 @@ function Calendar({
         ),
         weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground font-normal text-center align-middle",
+          "text-muted-foreground w-[14.285714%] p-0 !text-center font-normal align-middle",
           weekdayCell,
           weekday,
           defaultClassNames.weekday
@@ -400,6 +419,7 @@ function Calendar({
             <ChevronRight className="h-4 w-4" />
           ),
         DayButton,
+        Day,
         ...navButtons,
         ...possibleDatesDropdowns,
         ...components,

@@ -14,15 +14,19 @@
   border-collapse: collapse;
 }
 
+.rdp-weekday {
+  padding: 0 !important;
+  text-align: center !important;
+}
+
 .rdp-weekday,
 .rdp-day {
   width: 14.285714%;
-  padding: 0;
-  text-align: center;
   vertical-align: middle;
 }
 
 .rdp-day {
+  text-align: center;
   height: var(--rdp-day-height);
 }
 

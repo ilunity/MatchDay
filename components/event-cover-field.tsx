@@ -52,8 +52,8 @@ export function EventCoverField({
     : "relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted";
 
   const placeholderClass = compact
-    ? "flex aspect-[3/2] w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50"
-    : "flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50";
+    ? "flex aspect-[3/2] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50"
+    : "flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50";
 
   return (
     <div className="space-y-2">
