@@ -98,7 +98,7 @@ export default async function EventPage({ params }: PageProps) {
           possibleDates={possibleDates}
           initialSelected={initialSelected}
           bestDates={bestDates}
-          dateParticipants={participantsByDate}
+          participantsByDate={participantsByDate}
           disabled={calendarDisabled}
           statsAside={
             <DateStats stats={stats} totalParticipants={totalParticipants} />

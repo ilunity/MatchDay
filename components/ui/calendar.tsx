@@ -8,26 +8,38 @@ import {
 } from "react-day-picker";
 import { ru as ruLocale } from "react-day-picker/locale";
 import { dateKey } from "@/lib/dates";
+import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-const DAY_SIZE = "h-[42px] w-[42px]";
+const DAY_CELL = "h-[42px] w-[42px] p-0";
+const GRID_WIDTH = "w-[294px]";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
-  possibleDates?: Date[];
-  bestDates?: string[];
-  dateParticipants?: Record<string, string[]>;
+type DayButtonOptions = {
+  participantsByDate: Record<string, string[]>;
+  showParticipantTooltip: boolean;
+  readOnly: boolean;
 };
 
-function createDayButton(dateParticipants: Record<string, string[]>) {
+function createDayButton({
+  participantsByDate,
+  showParticipantTooltip,
+  readOnly,
+}: DayButtonOptions) {
   return function AvailabilityDayButton({
     day,
     modifiers,
     className,
+    onClick,
     ...props
   }: DayButtonProps) {
     const key = dateKey(day.date);
-    const names = dateParticipants[key] ?? [];
+    const names = participantsByDate[key] ?? [];
     const isSelected = modifiers.selected;
     const isPossible = modifiers.possible;
     const isDisabled = modifiers.disabled;
@@ -41,38 +53,78 @@ function createDayButton(dateParticipants: Record<string, string[]>) {
           ? "bg-accent text-accent-foreground"
           : "";
 
-    const tooltip =
-      names.length > 0 ? names.join(", ") : undefined;
-
-    return (
+    const button = (
       <button
         type="button"
         className={cn(
-          DAY_SIZE,
-          "relative inline-flex flex-col items-center justify-center gap-0.5 rounded-md p-0 text-xs font-normal",
-          "hover:opacity-90 focus-visible:outline-none",
+          DAY_CELL,
+          "relative inline-flex flex-col items-center justify-center gap-0.5 rounded-md text-xs font-normal",
+          readOnly
+            ? "cursor-default hover:opacity-100"
+            : "hover:opacity-90 focus-visible:outline-none",
           backgroundClass,
           isDisabled && "cursor-not-allowed opacity-50",
           className
         )}
-        title={tooltip}
         aria-label={
-          tooltip
-            ? `${day.date.getDate()}, ${tooltip}`
+          names.length > 0
+            ? `${day.date.getDate()}, ${names.join(", ")}`
             : String(day.date.getDate())
         }
+        onClick={
+          readOnly
+            ? (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            : onClick
+        }
+        tabIndex={readOnly ? -1 : props.tabIndex}
         {...props}
       >
         <span className="text-sm leading-none">{day.date.getDate()}</span>
         {names.length > 0 && (
-          <span className="text-[0.65rem] font-medium leading-none text-green-600 dark:text-green-400">
+          <span
+            className={cn(
+              "text-[0.65rem] font-medium leading-none",
+              isSelected
+                ? "text-green-300 dark:text-green-300"
+                : "text-green-600 dark:text-green-400"
+            )}
+          >
             {names.length}
           </span>
         )}
       </button>
     );
+
+    if (showParticipantTooltip && names.length > 0) {
+      return (
+        <Tooltip delayDuration={200}>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <p className="mb-1 font-medium">{ru.calendarParticipants}</p>
+            <ul className="space-y-0.5">
+              {names.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
+            </ul>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return button;
   };
 }
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  possibleDates?: Date[];
+  bestDates?: string[];
+  participantsByDate?: Record<string, string[]>;
+  showParticipantTooltip?: boolean;
+  readOnly?: boolean;
+};
 
 function Calendar({
   className,
@@ -80,7 +132,9 @@ function Calendar({
   showOutsideDays = true,
   possibleDates,
   bestDates = [],
-  dateParticipants = {},
+  participantsByDate = {},
+  showParticipantTooltip = false,
+  readOnly = false,
   modifiers,
   modifiersClassNames,
   components,
@@ -89,8 +143,13 @@ function Calendar({
   const defaultClassNames = getDefaultClassNames();
   const bestSet = new Set(bestDates);
   const DayButton = React.useMemo(
-    () => createDayButton(dateParticipants),
-    [dateParticipants]
+    () =>
+      createDayButton({
+        participantsByDate,
+        showParticipantTooltip,
+        readOnly,
+      }),
+    [participantsByDate, showParticipantTooltip, readOnly]
   );
 
   return (
@@ -116,17 +175,22 @@ function Calendar({
           "absolute right-1 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
           defaultClassNames.button_next
         ),
-        month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
-        weekdays: cn("flex w-full", defaultClassNames.weekdays),
+        month_grid: cn(
+          GRID_WIDTH,
+          "table-fixed border-collapse",
+          defaultClassNames.month_grid
+        ),
+        weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground flex items-center justify-center font-normal text-[0.8rem]",
-          DAY_SIZE,
+          "text-muted-foreground font-normal text-[0.8rem] text-center align-middle",
+          DAY_CELL,
           defaultClassNames.weekday
         ),
-        week: cn("flex w-full mt-2", defaultClassNames.week),
+        weeks: cn(defaultClassNames.weeks),
+        week: cn(defaultClassNames.week),
         day: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-          DAY_SIZE,
+          "relative p-0 text-center text-sm align-middle",
+          DAY_CELL,
           defaultClassNames.day
         ),
         day_button: cn(defaultClassNames.day_button),
