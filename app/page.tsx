@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CalendarPlus, LayoutDashboard } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,14 @@ export default async function HomePage() {
           {session ? (
             <>
               <Link href="/events/new" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto">{ru.createEvent}</Button>
+                <Button size="lg" className="w-full sm:w-auto">
+                  <CalendarPlus className="h-4 w-4" />
+                  {ru.createEvent}
+                </Button>
               </Link>
               <Link href="/dashboard" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                  <LayoutDashboard className="h-4 w-4" />
                   {ru.dashboard}
                 </Button>
               </Link>
