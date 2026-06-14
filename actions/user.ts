@@ -33,5 +33,6 @@ export async function updateUserName(formData: FormData): Promise<ActionResult> 
   await User.findByIdAndUpdate(session.user.id, { name: parsed.data.name });
 
   revalidatePath("/", "layout");
+  revalidatePath("/profile");
   return { success: true, name: parsed.data.name };
 }

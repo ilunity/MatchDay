@@ -8,7 +8,7 @@ export default middlewareAuth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
-  const protectedPaths = ["/dashboard", "/events"];
+  const protectedPaths = ["/dashboard", "/events", "/profile"];
   const isProtected = protectedPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
   );
@@ -41,5 +41,5 @@ export default middlewareAuth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/events/:path*"],
+  matcher: ["/dashboard/:path*", "/events/:path*", "/profile/:path*"],
 };

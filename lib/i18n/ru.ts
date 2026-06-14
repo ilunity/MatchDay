@@ -54,6 +54,8 @@ export const ru = {
   welcomeGuest: "Вы участвуете как",
   welcomeUser: "Вы вошли как",
   yourName: "Ваше имя",
+  profile: "Профиль",
+  profileHint: "Имя видят другие участники мероприятия",
   editName: "Изменить имя",
   editNameHint: "Имя видят другие участники мероприятия",
   setYourName: "Указать имя",
