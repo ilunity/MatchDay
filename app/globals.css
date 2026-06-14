@@ -6,10 +6,11 @@
   outline: none !important;
 }
 
-/* Unify weekday header and day cell horizontal alignment */
+/* Unify weekday header and day cell horizontal alignment.
+   Table width is set via Tailwind (w-[294px] / w-[497px]); do not use width: 100%
+   here — it creates a circular sizing loop with w-fit ancestors and 100%-width buttons. */
 .rdp-month_grid {
   table-layout: fixed;
-  width: 100%;
   border-collapse: collapse;
 }
 
@@ -23,14 +24,6 @@
 
 .rdp-day {
   height: var(--rdp-day-height);
-}
-
-.rdp-day_button {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0;
-  padding: 0;
-  max-width: none;
 }
 
 :root {
