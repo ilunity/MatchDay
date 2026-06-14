@@ -1,6 +1,38 @@
 @import "tailwindcss";
 @import "react-day-picker/style.css";
 
+/* Single focus ring on dropdown_root; suppress inner label outline from rdp styles */
+.rdp-dropdown:focus-visible ~ .rdp-caption_label {
+  outline: none !important;
+}
+
+/* Unify weekday header and day cell horizontal alignment */
+.rdp-month_grid {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rdp-weekday,
+.rdp-day {
+  width: 14.285714%;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.rdp-day {
+  height: var(--rdp-day-height);
+}
+
+.rdp-day_button {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
 :root {
   --background: #fafafa;
   --pattern-dot: color-mix(in srgb, var(--foreground) 9%, transparent);

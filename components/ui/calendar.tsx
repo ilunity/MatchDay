@@ -28,23 +28,21 @@ import {
 
 const CALENDAR_SIZES = {
   sm: {
-    dayCell: "h-[42px] w-[42px] p-0",
-    dayColumn: "w-[42px]",
-    weekdayCell: "h-8 w-[42px] p-0",
+    dayCell: "size-full p-0",
+    dayColumn: "h-[42px] p-0",
+    weekdayCell: "h-8 p-0",
     gridWidth: "w-[294px]",
-    cssVars:
-      "[--rdp-day-width:42px] [--rdp-day-height:42px] [--rdp-day_button-width:42px] [--rdp-day_button-height:42px] [--rdp-weekday-padding:0]",
+    cssVars: "[--rdp-day-height:42px] [--rdp-weekday-padding:0]",
     dayNumber: "text-sm",
     participantCount: "text-[0.65rem]",
     weekday: "text-[0.8rem]",
   },
   lg: {
-    dayCell: "h-[71px] w-[71px] p-0",
-    dayColumn: "w-[71px]",
-    weekdayCell: "h-8 w-[71px] p-0",
+    dayCell: "size-full p-0",
+    dayColumn: "h-[71px] p-0",
+    weekdayCell: "h-8 p-0",
     gridWidth: "w-[497px]",
-    cssVars:
-      "[--rdp-day-width:71px] [--rdp-day-height:71px] [--rdp-day_button-width:71px] [--rdp-day_button-height:71px] [--rdp-weekday-padding:0]",
+    cssVars: "[--rdp-day-height:71px] [--rdp-weekday-padding:0]",
     dayNumber: "text-base",
     participantCount: "text-xs",
     weekday: "text-sm",
@@ -105,7 +103,7 @@ function createDayButton({
         type="button"
         className={cn(
           dayCell,
-          "relative inline-flex flex-col items-center justify-center gap-0 rounded-md text-xs font-normal",
+          "relative flex size-full flex-col items-center justify-center gap-0 rounded-md text-xs font-normal",
           cursorClass,
           readOnly
             ? "hover:opacity-100"
@@ -386,7 +384,7 @@ function Calendar({
           dayColumn,
           defaultClassNames.day
         ),
-        day_button: cn(defaultClassNames.day_button),
+        day_button: cn("size-full", defaultClassNames.day_button),
         selected: "",
         today: cn(defaultClassNames.today),
         outside: cn("text-muted-foreground opacity-50", defaultClassNames.outside),
