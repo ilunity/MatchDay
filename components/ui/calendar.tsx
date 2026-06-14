@@ -314,17 +314,20 @@ function Calendar({
           "relative flex h-8! items-center justify-center",
           defaultClassNames.month_caption
         ),
-        caption_label: cn("text-sm font-medium", defaultClassNames.caption_label),
+        caption_label: cn(
+          "pointer-events-none text-sm font-medium select-none outline-none",
+          defaultClassNames.caption_label
+        ),
         dropdowns: cn(
           "flex items-center justify-center gap-2 text-sm font-medium",
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] data-[disabled=true]:cursor-not-allowed [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
+          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] data-[disabled=true]:cursor-not-allowed [&>.rdp-dropdown:focus-visible~.rdp-caption_label]:outline-none [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          "absolute inset-0 cursor-pointer opacity-0",
+          "absolute inset-0 cursor-pointer opacity-0 outline-none focus:outline-none focus-visible:outline-none",
           defaultClassNames.dropdown
         ),
         months_dropdown: cn(
