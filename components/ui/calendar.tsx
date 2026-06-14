@@ -85,7 +85,7 @@ function createDayButton({
     const isToday = modifiers.today;
 
     const backgroundClass = isSelected
-      ? "border-0 bg-sky-100 text-blue-900 ring-0 outline-none hover:bg-sky-100 hover:text-blue-900 dark:bg-sky-950 dark:text-sky-100 dark:hover:bg-sky-950 dark:hover:text-sky-100"
+      ? "border-0 bg-sky-200 text-blue-900 ring-0 outline-none hover:bg-sky-200 hover:text-blue-900 dark:bg-sky-900 dark:text-sky-100 dark:hover:bg-sky-900 dark:hover:text-sky-100"
       : isPossible
         ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
         : isToday
@@ -114,11 +114,13 @@ function createDayButton({
           isDisabled && "opacity-50",
           className
         )}
-        aria-label={
-          names.length > 0
-            ? `${day.date.getDate()}, ${names.join(", ")}`
-            : String(day.date.getDate())
-        }
+        aria-label={(() => {
+          const dayLabel =
+            names.length > 0
+              ? `${day.date.getDate()}, ${names.join(", ")}`
+              : String(day.date.getDate());
+          return isSelected ? `${dayLabel}, выбрано` : dayLabel;
+        })()}
         onClick={
           readOnly
             ? (event) => {
@@ -278,7 +280,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
-  const { dayCell, dayColumn, weekdayCell, gridWidth, cssVars, weekday } =
+  const { dayColumn, weekdayCell, gridWidth, cssVars, weekday } =
     CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
   const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);

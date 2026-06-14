@@ -104,7 +104,7 @@ export function AvailabilityCalendar({
               size={isMdUp ? "lg" : "sm"}
               mode="multiple"
               selected={selected}
-              onSelect={isEditing ? handleSelect : undefined}
+              onSelect={handleSelect}
               possibleDates={possibleDates}
               bestDates={bestDates}
               participantsByDate={participantsByDate}
