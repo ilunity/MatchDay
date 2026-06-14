@@ -29,14 +29,22 @@ import {
 const CALENDAR_SIZES = {
   sm: {
     dayCell: "h-[42px] w-[42px] p-0",
+    dayColumn: "w-[42px]",
+    weekdayCell: "h-8 w-[42px] p-0",
     gridWidth: "w-[294px]",
+    cssVars:
+      "[--rdp-day-width:42px] [--rdp-day-height:42px] [--rdp-day_button-width:42px] [--rdp-day_button-height:42px] [--rdp-weekday-padding:0]",
     dayNumber: "text-sm",
     participantCount: "text-[0.65rem]",
     weekday: "text-[0.8rem]",
   },
   lg: {
     dayCell: "h-[71px] w-[71px] p-0",
+    dayColumn: "w-[71px]",
+    weekdayCell: "h-8 w-[71px] p-0",
     gridWidth: "w-[497px]",
+    cssVars:
+      "[--rdp-day-width:71px] [--rdp-day-height:71px] [--rdp-day_button-width:71px] [--rdp-day_button-height:71px] [--rdp-weekday-padding:0]",
     dayNumber: "text-base",
     participantCount: "text-xs",
     weekday: "text-sm",
@@ -270,7 +278,8 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
-  const { dayCell, gridWidth, weekday } = CALENDAR_SIZES[size];
+  const { dayCell, dayColumn, weekdayCell, gridWidth, cssVars, weekday } =
+    CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
   const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);
   const { startMonth, endMonth } = getCalendarMonthBounds(possibleDates);
@@ -314,7 +323,7 @@ function Calendar({
       defaultMonth={defaultMonth}
       startMonth={startMonth}
       endMonth={endMonth}
-      className={cn("p-3", className)}
+      className={cn("p-3", cssVars, className)}
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
@@ -364,7 +373,7 @@ function Calendar({
         weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
           "text-muted-foreground font-normal text-center align-middle",
-          dayCell,
+          weekdayCell,
           weekday,
           defaultClassNames.weekday
         ),
@@ -372,7 +381,7 @@ function Calendar({
         week: cn(defaultClassNames.week),
         day: cn(
           "relative p-0 text-center text-sm align-middle",
-          dayCell,
+          dayColumn,
           defaultClassNames.day
         ),
         day_button: cn(defaultClassNames.day_button),
