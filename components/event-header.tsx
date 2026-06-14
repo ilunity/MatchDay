@@ -8,7 +8,6 @@ type EventHeaderProps = {
   description?: string;
   coverUrl?: string;
   actions?: ReactNode;
-  meta?: ReactNode;
 };
 
 export function EventHeader({
@@ -16,7 +15,6 @@ export function EventHeader({
   description,
   coverUrl,
   actions,
-  meta,
 }: EventHeaderProps) {
   const hasBody = Boolean(coverUrl || description);
 
@@ -26,8 +24,6 @@ export function EventHeader({
         <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{title}</h1>
         {actions ? <div className="w-full shrink-0 sm:w-auto">{actions}</div> : null}
       </div>
-
-      {meta}
 
       {hasBody && (
         <div className="md:clearfix">

@@ -76,17 +76,6 @@ export default async function EventPage({ params }: PageProps) {
               </Link>
             ) : undefined
           }
-          meta={
-            session?.user?.name?.trim() ? (
-              <p className="text-sm text-muted-foreground">
-                {ru.welcomeUser} {session.user.name}
-              </p>
-            ) : !session && guestName ? (
-              <p className="text-sm text-muted-foreground">
-                {ru.welcomeGuest} {guestName}
-              </p>
-            ) : undefined
-          }
         />
 
         <div className="mt-8 space-y-2">

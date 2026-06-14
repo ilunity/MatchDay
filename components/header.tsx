@@ -2,12 +2,19 @@ import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { avatarUrlFromKey } from "@/lib/avatar";
+import { getGuestName } from "@/lib/guest";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
 import { UserBadge } from "@/components/user-badge";
 
 export async function Header() {
   const session = await auth();
+  const guestName = session ? undefined : await getGuestName();
+  const welcomeText = session?.user?.name?.trim()
+    ? `${ru.welcomeUser} ${session.user.name.trim()}`
+    : guestName?.trim()
+      ? `${ru.welcomeGuest} ${guestName.trim()}`
+      : undefined;
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -18,7 +25,12 @@ export async function Header() {
         >
           {ru.appName}
         </Link>
-        <nav className="flex shrink-0 items-center gap-1 sm:gap-4">
+        <nav className="flex min-w-0 shrink items-center gap-1 sm:gap-4">
+          {welcomeText ? (
+            <span className="min-w-0 max-w-[7rem] truncate text-sm text-muted-foreground sm:max-w-[10rem] md:max-w-[14rem]">
+              {welcomeText}
+            </span>
+          ) : null}
           {session ? (
             <>
               <Link
