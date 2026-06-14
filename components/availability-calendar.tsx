@@ -23,6 +23,7 @@ export function AvailabilityCalendar({
   initialSelected,
   bestDates,
   participantsByDate,
+  currentUserName,
   disabled,
   statsAside,
 }: {
@@ -32,6 +33,7 @@ export function AvailabilityCalendar({
   initialSelected: Date[];
   bestDates: string[];
   participantsByDate?: Record<string, string[]>;
+  currentUserName?: string;
   disabled?: boolean;
   statsAside?: ReactNode;
 }) {
@@ -104,6 +106,7 @@ export function AvailabilityCalendar({
               possibleDates={possibleDates}
               bestDates={bestDates}
               participantsByDate={participantsByDate}
+              currentUserName={currentUserName}
               showParticipantTooltip={!isEditing}
               readOnly={!isEditing}
               disabled={disabled ? true : isDayDisabled}

@@ -50,6 +50,8 @@ export default async function EventPage({ params }: PageProps) {
   const userAvailability = await getUserAvailability(event._id.toString());
   const initialSelected = userAvailability.map((d) => new Date(d));
   const bestDates = stats.slice(0, 3).map((s) => s.date);
+  const currentUserName =
+    session?.user?.name?.trim() || guestName?.trim() || undefined;
 
   const appUrl = process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const shareUrl = `${appUrl}/e/${slug}`;
@@ -93,7 +95,7 @@ export default async function EventPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div className="mt-10 w-full px-4 pb-8">
+      <div className="container max-w-4xl px-4 pb-8 mt-10">
         <AvailabilityCalendar
           eventId={event._id.toString()}
           eventSlug={slug}
@@ -101,6 +103,7 @@ export default async function EventPage({ params }: PageProps) {
           initialSelected={initialSelected}
           bestDates={bestDates}
           participantsByDate={participantsByDate}
+          currentUserName={currentUserName}
           disabled={calendarDisabled}
           statsAside={
             <DateStats stats={stats} totalParticipants={totalParticipants} />

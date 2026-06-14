@@ -41,6 +41,7 @@ type DayButtonOptions = {
   participantsByDate: Record<string, string[]>;
   showParticipantTooltip: boolean;
   readOnly: boolean;
+  currentUserName?: string;
 };
 
 function createDayButton({
@@ -48,6 +49,7 @@ function createDayButton({
   participantsByDate,
   showParticipantTooltip,
   readOnly,
+  currentUserName,
 }: DayButtonOptions) {
   const { dayCell, dayNumber, participantCount } = CALENDAR_SIZES[size];
 
@@ -78,7 +80,7 @@ function createDayButton({
         type="button"
         className={cn(
           dayCell,
-          "relative inline-flex flex-col items-center justify-center gap-0.5 rounded-md text-xs font-normal",
+          "relative inline-flex flex-col items-center justify-center gap-0 rounded-md text-xs font-normal",
           readOnly
             ? "cursor-default hover:opacity-100"
             : "hover:opacity-90 focus-visible:outline-none",
@@ -106,11 +108,8 @@ function createDayButton({
         {names.length > 0 && (
           <span
             className={cn(
-              "font-medium leading-none",
-              participantCount,
-              isSelected
-                ? "text-green-300 dark:text-green-300"
-                : "text-green-600 dark:text-green-400"
+              "font-medium leading-none text-green-600 dark:text-green-400",
+              participantCount
             )}
           >
             {names.length}
@@ -127,7 +126,15 @@ function createDayButton({
             <p className="mb-1 font-medium">{ru.calendarParticipants}</p>
             <ul className="space-y-0.5">
               {names.map((name) => (
-                <li key={name}>{name}</li>
+                <li
+                  key={name}
+                  className={cn(
+                    currentUserName === name &&
+                      "font-medium text-green-600 dark:text-green-400"
+                  )}
+                >
+                  {name}
+                </li>
               ))}
             </ul>
           </TooltipContent>
@@ -146,6 +153,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   participantsByDate?: Record<string, string[]>;
   showParticipantTooltip?: boolean;
   readOnly?: boolean;
+  currentUserName?: string;
 };
 
 function Calendar({
@@ -158,6 +166,7 @@ function Calendar({
   participantsByDate = {},
   showParticipantTooltip = false,
   readOnly = false,
+  currentUserName,
   modifiers,
   modifiersClassNames,
   components,
@@ -173,8 +182,9 @@ function Calendar({
         participantsByDate,
         showParticipantTooltip,
         readOnly,
+        currentUserName,
       }),
-    [size, participantsByDate, showParticipantTooltip, readOnly]
+    [size, participantsByDate, showParticipantTooltip, readOnly, currentUserName]
   );
 
   return (
