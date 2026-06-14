@@ -3,6 +3,8 @@
 
 :root {
   --background: #fafafa;
+  --pattern-dot: color-mix(in srgb, var(--foreground) 6%, transparent);
+  --pattern-glow: color-mix(in srgb, var(--primary) 10%, transparent);
   --foreground: #0a0a0a;
   --card: #ffffff;
   --card-foreground: #0a0a0a;
@@ -52,6 +54,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
+    --pattern-dot: color-mix(in srgb, var(--foreground) 4%, transparent);
+    --pattern-glow: color-mix(in srgb, var(--primary) 8%, transparent);
     --foreground: #fafafa;
     --card: #18181b;
     --card-foreground: #fafafa;
@@ -78,7 +82,14 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--pattern-glow), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 0%, var(--pattern-glow), transparent),
+    radial-gradient(ellipse 40% 35% at 0% 100%, color-mix(in srgb, var(--primary) 5%, transparent), transparent),
+    radial-gradient(circle, var(--pattern-dot) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
