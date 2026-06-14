@@ -77,12 +77,20 @@ function createDayButton({
     const isToday = modifiers.today;
 
     const backgroundClass = isSelected
-      ? "bg-blue-600 text-white hover:bg-blue-600 hover:text-white"
+      ? "border-0 bg-sky-100 text-blue-900 ring-0 outline-none hover:bg-sky-100 hover:text-blue-900 dark:bg-sky-950 dark:text-sky-100 dark:hover:bg-sky-950 dark:hover:text-sky-100"
       : isPossible
         ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
         : isToday
           ? "bg-accent text-accent-foreground"
           : "";
+
+    const cursorClass = isDisabled
+      ? "cursor-not-allowed"
+      : readOnly
+        ? showParticipantTooltip && names.length > 0
+          ? "cursor-pointer"
+          : "cursor-default"
+        : "cursor-pointer";
 
     const button = (
       <button
@@ -90,11 +98,12 @@ function createDayButton({
         className={cn(
           dayCell,
           "relative inline-flex flex-col items-center justify-center gap-0 rounded-md text-xs font-normal",
+          cursorClass,
           readOnly
-            ? "cursor-default hover:opacity-100"
+            ? "hover:opacity-100"
             : "hover:opacity-90 focus-visible:outline-none",
           backgroundClass,
-          isDisabled && "cursor-not-allowed opacity-50",
+          isDisabled && "opacity-50",
           className
         )}
         aria-label={
@@ -315,7 +324,7 @@ function Calendar({
           defaultClassNames.month_caption
         ),
         caption_label: cn(
-          "pointer-events-none text-sm font-medium select-none outline-none",
+          "pointer-events-none select-none text-sm font-medium !outline-none",
           defaultClassNames.caption_label
         ),
         dropdowns: cn(
@@ -323,7 +332,7 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] data-[disabled=true]:cursor-not-allowed [&>.rdp-dropdown:focus-visible~.rdp-caption_label]:outline-none [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
+          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 data-[disabled=true]:cursor-not-allowed [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
@@ -367,7 +376,7 @@ function Calendar({
           defaultClassNames.day
         ),
         day_button: cn(defaultClassNames.day_button),
-        selected: cn(defaultClassNames.selected),
+        selected: "",
         today: cn(defaultClassNames.today),
         outside: cn("text-muted-foreground opacity-50", defaultClassNames.outside),
         disabled: cn("text-muted-foreground opacity-50", defaultClassNames.disabled),
