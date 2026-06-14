@@ -8,8 +8,10 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next
     environment:
       NODE_ENV: development
+      WATCHPACK_POLLING: "true"
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       APP_URL: ${APP_URL:-http://localhost:3000}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:3000/api/storage}

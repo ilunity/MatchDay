@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { getGuestId, getGuestName } from "@/lib/guest";
 import { ru } from "@/lib/i18n/ru";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
-import { CoverUpload } from "@/components/cover-upload";
+import { EventHeader } from "@/components/event-header";
 import { DateStats } from "@/components/date-stats";
 import { GuestNameForm } from "@/components/guest-name-form";
 import { ShareLink } from "@/components/share-link";
@@ -58,23 +58,25 @@ export default async function EventPage({ params }: PageProps) {
     <div className="container max-w-4xl px-4 py-8">
       <GuestNameForm eventSlug={slug} open={needsGuestName} />
 
-      <CoverUpload
-        eventId={event._id.toString()}
-        currentCoverUrl={coverUrl}
-        isOwner={isOwner}
+      <EventHeader
+        title={event.title}
+        description={event.description}
+        coverUrl={coverUrl}
+        actions={
+          isOwner ? (
+            <Link href={`/events/${slug}/edit`}>
+              <Button variant="outline">{ru.edit}</Button>
+            </Link>
+          ) : undefined
+        }
+        meta={
+          !session && guestName ? (
+            <p className="text-sm text-muted-foreground">
+              {ru.welcomeGuest} {guestName}
+            </p>
+          ) : undefined
+        }
       />
-
-      <div className="mt-6 space-y-2">
-        <h1 className="text-3xl font-bold sm:text-4xl">{event.title}</h1>
-        {event.description && (
-          <p className="text-lg text-muted-foreground">{event.description}</p>
-        )}
-        {!session && guestName && (
-          <p className="text-sm text-muted-foreground">
-            {ru.welcomeGuest} {guestName}
-          </p>
-        )}
-      </div>
 
       <div className="mt-8 space-y-2">
         <h2 className="text-sm font-medium">{ru.shareLink}</h2>

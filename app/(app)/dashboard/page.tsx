@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getUserEvents } from "@/actions/events";
-import { formatDateShortRu } from "@/lib/dates";
+import { EventDashboardCard } from "@/components/event-dashboard-card";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function DashboardPage() {
   const events = await getUserEvents();
@@ -32,26 +32,14 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
-            <Card key={event._id.toString()} className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="line-clamp-2 text-lg">{event.title}</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  {ru.createdAt}:{" "}
-                  {formatDateShortRu(new Date(event.createdAt))}
-                </p>
-              </CardHeader>
-              <CardContent className="mt-auto">
-                <p className="mb-4 text-sm text-muted-foreground">
-                  {event.possibleDates.length} возможных дат
-                  {event.requireAuth && " · только для зарегистрированных"}
-                </p>
-                <Link href={`/e/${event.slug}`}>
-                  <Button variant="outline" className="w-full">
-                    {ru.openEvent}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            <EventDashboardCard
+              key={event._id.toString()}
+              slug={event.slug}
+              title={event.title}
+              createdAt={new Date(event.createdAt)}
+              possibleDatesCount={event.possibleDates.length}
+              requireAuth={event.requireAuth}
+            />
           ))}
         </div>
       )}

@@ -2,7 +2,11 @@
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { parseDateKey } from "@/lib/dates";
+import {
+  mergeAvailabilityOnSave,
+  filterAvailabilityForCalendar,
+} from "@/lib/availability-dates";
+import { dateKey } from "@/lib/dates";
 import {
   createGuestId,
   getGuestId,
@@ -46,18 +50,29 @@ export async function setAvailability(
 
   const session = await auth();
   const possibleSet = new Set(
-    event.possibleDates.map((d) => new Date(d).toISOString().slice(0, 10))
+    event.possibleDates.map((d) => dateKey(new Date(d)))
   );
 
-  const availableDates = parsed.data.availableDates
-    .filter((d) => possibleSet.has(d))
-    .map(parseDateKey);
+  const selectedKeys = parsed.data.availableDates.filter((d) =>
+    possibleSet.has(d)
+  );
 
   if (event.requireAuth && !session?.user?.id) {
     return { success: false, error: "Необходима авторизация" };
   }
 
   if (session?.user?.id) {
+    const existing = await Availability.findOne({
+      eventId: event._id,
+      userId: session.user.id,
+    }).lean<IAvailability>();
+
+    const availableDates = mergeAvailabilityOnSave(
+      existing?.availableDates ?? [],
+      selectedKeys,
+      possibleSet
+    );
+
     await Availability.findOneAndUpdate(
       { eventId: event._id, userId: session.user.id },
       { availableDates },
@@ -70,6 +85,17 @@ export async function setAvailability(
     if (!(await getGuestId())) {
       await setGuestCookies(guestId, guestName);
     }
+
+    const existing = await Availability.findOne({
+      eventId: event._id,
+      guestId,
+    }).lean<IAvailability>();
+
+    const availableDates = mergeAvailabilityOnSave(
+      existing?.availableDates ?? [],
+      selectedKeys,
+      possibleSet
+    );
 
     await Availability.findOneAndUpdate(
       { eventId: event._id, guestId },
@@ -121,20 +147,31 @@ export async function getUserAvailability(eventId: string) {
   await connectDB();
   const session = await auth();
 
+  let availableDates: Date[] = [];
+
   if (session?.user?.id) {
     const av = await Availability.findOne({
       eventId,
       userId: session.user.id,
     }).lean<IAvailability>();
-    return av?.availableDates ?? [];
+    availableDates = av?.availableDates ?? [];
+  } else {
+    const guestId = await getGuestId();
+    if (guestId) {
+      const av = await Availability.findOne({
+        eventId,
+        guestId,
+      }).lean<IAvailability>();
+      availableDates = av?.availableDates ?? [];
+    }
   }
 
-  const guestId = await getGuestId();
-  if (!guestId) return [];
+  const event = await Event.findById(eventId).lean<IEvent>();
+  if (!event) return availableDates;
 
-  const av = await Availability.findOne({
-    eventId,
-    guestId,
-  }).lean<IAvailability>();
-  return av?.availableDates ?? [];
+  const possibleSet = new Set(
+    event.possibleDates.map((d) => dateKey(new Date(d)))
+  );
+
+  return filterAvailabilityForCalendar(availableDates, possibleSet);
 }

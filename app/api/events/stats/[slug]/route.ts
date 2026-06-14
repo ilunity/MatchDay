@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/db";
+import { dateKey } from "@/lib/dates";
 import { Event, type IEvent } from "@/models/Event";
 import { Availability } from "@/models/Availability";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,7 +16,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   }
 
   const possibleSet = new Set(
-    event.possibleDates.map((d) => new Date(d).toISOString().slice(0, 10))
+    event.possibleDates.map((d) => dateKey(new Date(d)))
   );
 
   const pipeline = [
@@ -34,7 +35,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
   const stats = results
     .map((r: { _id: Date; count: number }) => ({
-      date: new Date(r._id).toISOString().slice(0, 10),
+      date: dateKey(new Date(r._id)),
       count: r.count,
     }))
     .filter((s: { date: string; count: number }) => possibleSet.has(s.date));

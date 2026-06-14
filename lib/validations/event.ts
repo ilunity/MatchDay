@@ -9,4 +9,9 @@ export const createEventSchema = z.object({
     .min(1, "Выберите хотя бы одну дату"),
 });
 
+export const updateEventSchema = createEventSchema.extend({
+  slug: z.string().min(1),
+});
+
 export type CreateEventInput = z.infer<typeof createEventSchema>;
+export type UpdateEventInput = z.infer<typeof updateEventSchema>;

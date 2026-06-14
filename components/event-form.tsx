@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { createEvent } from "@/actions/events";
+import { createEvent, updateEvent } from "@/actions/events";
+import { EventCoverField } from "@/components/event-cover-field";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +13,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { dateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 
-export function EventForm() {
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [requireAuth, setRequireAuth] = useState(false);
+type EventFormInitial = {
+  slug: string;
+  title: string;
+  description?: string;
+  coverUrl?: string;
+  possibleDates: Date[];
+  requireAuth?: boolean;
+};
+
+type EventFormProps =
+  | { mode?: "create" }
+  | { mode: "edit"; initial: EventFormInitial };
+
+export function EventForm(props: EventFormProps = { mode: "create" }) {
+  const isEdit = props.mode === "edit";
+  const initial = isEdit ? props.initial : undefined;
+  const mode = isEdit ? "edit" : "create";
+
+  const [selectedDates, setSelectedDates] = useState<Date[]>(
+    initial?.possibleDates ?? []
+  );
+  const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -26,9 +47,18 @@ export function EventForm() {
     formData.set("requireAuth", requireAuth ? "on" : "off");
     selectedDates.forEach((d) => formData.append("possibleDates", dateKey(d)));
 
+    if (mode === "edit" && initial) {
+      formData.set("slug", initial.slug);
+    }
+
     startTransition(async () => {
       try {
-        await createEvent(formData);
+        const result =
+          mode === "edit" ? await updateEvent(formData) : await createEvent(formData);
+
+        if (result && !result.success) {
+          setError(result.error ?? ru.errorGeneric);
+        }
       } catch (err) {
         if (err instanceof Error && err.message === "NEXT_REDIRECT") {
           throw err;
@@ -39,10 +69,24 @@ export function EventForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      encType="multipart/form-data"
+      className="space-y-6"
+    >
       <div className="space-y-2">
         <Label htmlFor="title">{ru.title}</Label>
-        <Input id="title" name="title" required maxLength={200} />
+        <Input
+          id="title"
+          name="title"
+          required
+          maxLength={200}
+          defaultValue={initial?.title}
+        />
+      </div>
+
+      <div className="max-w-[220px] sm:max-w-[260px]">
+        <EventCoverField compact initialCoverUrl={initial?.coverUrl} />
       </div>
 
       <div className="space-y-2">
@@ -52,24 +96,31 @@ export function EventForm() {
           name="description"
           placeholder={ru.descriptionPlaceholder}
           maxLength={2000}
+          defaultValue={initial?.description ?? ""}
+          rows={5}
+          className="min-h-[7rem] resize-y"
         />
       </div>
 
-      <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
-        <div className="space-y-1">
-          <Label htmlFor="requireAuth">{ru.requireAuth}</Label>
-          <p className="text-sm text-muted-foreground">{ru.requireAuthHint}</p>
+      {mode === "create" && (
+        <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+          <div className="space-y-1">
+            <Label htmlFor="requireAuth">{ru.requireAuth}</Label>
+            <p className="text-sm text-muted-foreground">{ru.requireAuthHint}</p>
+          </div>
+          <Switch
+            id="requireAuth"
+            checked={requireAuth}
+            onCheckedChange={setRequireAuth}
+          />
         </div>
-        <Switch
-          id="requireAuth"
-          checked={requireAuth}
-          onCheckedChange={setRequireAuth}
-        />
-      </div>
+      )}
 
       <div className="space-y-2">
         <Label>{ru.possibleDates}</Label>
-        <p className="text-sm text-muted-foreground">{ru.possibleDatesHint}</p>
+        <p className="text-sm text-muted-foreground">
+          {mode === "edit" ? ru.possibleDatesEditHint : ru.possibleDatesHint}
+        </p>
         <div className="overflow-x-auto rounded-lg border bg-card p-2">
           <Calendar
             mode="multiple"
@@ -80,19 +131,26 @@ export function EventForm() {
           />
         </div>
         {selectedDates.length === 0 && (
-          <p className="text-sm text-destructive">Выберите хотя бы одну дату</p>
+          <p className="text-sm text-destructive">{ru.selectAtLeastOneDate}</p>
         )}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button
-        type="submit"
-        disabled={pending || selectedDates.length === 0}
-        className="w-full sm:w-auto"
-      >
-        {pending ? ru.loading : ru.create}
-      </Button>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="submit"
+          disabled={pending || selectedDates.length === 0}
+          className="w-full sm:w-auto"
+        >
+          {pending ? ru.loading : mode === "edit" ? ru.save : ru.create}
+        </Button>
+        {mode === "edit" && initial && (
+          <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+            <Link href={`/e/${initial.slug}`}>{ru.cancel}</Link>
+          </Button>
+        )}
+      </div>
     </form>
   );
 }
