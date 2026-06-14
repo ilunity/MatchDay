@@ -9,7 +9,7 @@ export const ru = {
   dashboard: "Мои мероприятия",
   createEvent: "Новое мероприятие",
   email: "Email",
-  emailPlaceholder: "ваш@email.com",
+  emailPlaceholder: "you@example.com",
   loginDescription: "Введите email — мы отправим ссылку для входа",
   sendMagicLink: "Отправить ссылку для входа",
   magicLinkSent: "Проверьте почту — мы отправили ссылку для входа",
