@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { getGuestId, getGuestName } from "@/lib/guest";
 import { ru } from "@/lib/i18n/ru";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
+import { CompleteProfileForm } from "@/components/complete-profile-form";
 import { EventHeader } from "@/components/event-header";
 import { DateStats } from "@/components/date-stats";
 import { GuestNameForm } from "@/components/guest-name-form";
@@ -31,7 +32,7 @@ export default async function EventPage({ params }: PageProps) {
     );
   }
 
-  const { event, stats, totalParticipants } = data;
+  const { event, stats, totalParticipants, participantsByDate } = data;
   const session = await auth();
   const isOwner = session?.user?.id === event.ownerId.toString();
 
@@ -42,6 +43,8 @@ export default async function EventPage({ params }: PageProps) {
   const guestId = await getGuestId();
   const guestName = await getGuestName();
   const needsGuestName = !event.requireAuth && !session && !guestId;
+  const needsProfileName = !!session?.user?.id && !session.user.name?.trim();
+  const calendarDisabled = needsGuestName || needsProfileName;
 
   const possibleDates = event.possibleDates.map((d) => new Date(d));
   const userAvailability = await getUserAvailability(event._id.toString());
@@ -57,6 +60,7 @@ export default async function EventPage({ params }: PageProps) {
   return (
     <div className="container max-w-4xl px-4 py-8">
       <GuestNameForm eventSlug={slug} open={needsGuestName} />
+      <CompleteProfileForm open={needsProfileName} />
 
       <EventHeader
         title={event.title}
@@ -70,7 +74,11 @@ export default async function EventPage({ params }: PageProps) {
           ) : undefined
         }
         meta={
-          !session && guestName ? (
+          session?.user?.name?.trim() ? (
+            <p className="text-sm text-muted-foreground">
+              {ru.welcomeUser} {session.user.name}
+            </p>
+          ) : !session && guestName ? (
             <p className="text-sm text-muted-foreground">
               {ru.welcomeGuest} {guestName}
             </p>
@@ -90,7 +98,8 @@ export default async function EventPage({ params }: PageProps) {
           possibleDates={possibleDates}
           initialSelected={initialSelected}
           bestDates={bestDates}
-          disabled={needsGuestName}
+          dateParticipants={participantsByDate}
+          disabled={calendarDisabled}
           statsAside={
             <DateStats stats={stats} totalParticipants={totalParticipants} />
           }

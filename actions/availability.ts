@@ -19,6 +19,7 @@ import {
 } from "@/lib/validations/availability";
 import { Availability, type IAvailability } from "@/models/Availability";
 import { Event, type IEvent } from "@/models/Event";
+import { type IUser } from "@/models/User";
 import { revalidatePath } from "next/cache";
 
 export type ActionResult = {
@@ -62,6 +63,12 @@ export async function setAvailability(
   }
 
   if (session?.user?.id) {
+    const { User } = await import("@/models/User");
+    const user = await User.findById(session.user.id).lean<IUser>();
+    if (!user?.name?.trim()) {
+      return { success: false, error: "Укажите имя в профиле" };
+    }
+
     const existing = await Availability.findOne({
       eventId: event._id,
       userId: session.user.id,

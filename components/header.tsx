@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
+import { ProfileNameEdit } from "@/components/profile-name-edit";
 
 export async function Header() {
   const session = await auth();
@@ -15,6 +16,7 @@ export async function Header() {
         <nav className="flex items-center gap-2 sm:gap-4">
           {session ? (
             <>
+              <ProfileNameEdit initialName={session.user.name} />
               <Link
                 href="/dashboard"
                 className="text-sm text-muted-foreground hover:text-foreground"

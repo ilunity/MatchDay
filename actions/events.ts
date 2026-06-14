@@ -153,6 +153,7 @@ export async function getEventStats(slug: string) {
   if (!event) return null;
 
   const { Availability } = await import("@/models/Availability");
+  const { User } = await import("@/models/User");
   const availabilities = await Availability.find({
     eventId: event._id,
   }).lean();
@@ -161,24 +162,57 @@ export async function getEventStats(slug: string) {
     event.possibleDates.map((d) => dateKey(new Date(d)))
   );
 
+  const userIds = availabilities
+    .filter((av) => av.userId)
+    .map((av) => av.userId!);
+  const users = await User.find({ _id: { $in: userIds } }).lean<
+    import("@/models/User").IUser[]
+  >();
+  const userNames = new Map(
+    users.map((user) => [user._id.toString(), user.name?.trim() || "Участник"])
+  );
+
   const dateCounts = new Map<string, number>();
+  const dateParticipants = new Map<string, string[]>();
 
   for (const av of availabilities) {
+    const participantName = av.userId
+      ? (userNames.get(av.userId.toString()) ?? "Участник")
+      : (av.guestName?.trim() || "Гость");
+
     for (const date of av.availableDates) {
       const key = dateKey(new Date(date));
-      if (possibleSet.has(key)) {
-        dateCounts.set(key, (dateCounts.get(key) ?? 0) + 1);
-      }
+      if (!possibleSet.has(key)) continue;
+
+      dateCounts.set(key, (dateCounts.get(key) ?? 0) + 1);
+
+      const names = dateParticipants.get(key) ?? [];
+      names.push(participantName);
+      dateParticipants.set(key, names);
     }
   }
 
   const stats = Array.from(dateCounts.entries())
-    .map(([date, count]) => ({ date, count }))
+    .map(([date, count]) => ({
+      date,
+      count,
+      participants: (dateParticipants.get(date) ?? []).sort((a, b) =>
+        a.localeCompare(b, "ru")
+      ),
+    }))
     .sort((a, b) => b.count - a.count || a.date.localeCompare(b.date));
+
+  const participantsByDate = Object.fromEntries(
+    Array.from(dateParticipants.entries()).map(([date, names]) => [
+      date,
+      [...names].sort((a, b) => a.localeCompare(b, "ru")),
+    ])
+  );
 
   return {
     event,
     stats,
     totalParticipants: availabilities.length,
+    participantsByDate,
   };
 }

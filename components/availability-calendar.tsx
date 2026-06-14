@@ -14,6 +14,7 @@ export function AvailabilityCalendar({
   possibleDates,
   initialSelected,
   bestDates,
+  dateParticipants,
   disabled,
   statsAside,
 }: {
@@ -22,6 +23,7 @@ export function AvailabilityCalendar({
   possibleDates: Date[];
   initialSelected: Date[];
   bestDates: string[];
+  dateParticipants?: Record<string, string[]>;
   disabled?: boolean;
   statsAside?: ReactNode;
 }) {
@@ -71,6 +73,7 @@ export function AvailabilityCalendar({
               onSelect={handleSelect}
               possibleDates={possibleDates}
               bestDates={bestDates}
+              dateParticipants={dateParticipants}
               disabled={disabled ? true : isDayDisabled}
               numberOfMonths={1}
               className="mx-auto"

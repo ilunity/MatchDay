@@ -2,7 +2,7 @@ import { formatDateShortRu, parseDateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-type Stat = { date: string; count: number };
+type Stat = { date: string; count: number; participants?: string[] };
 
 export function DateStats({
   stats,
@@ -43,6 +43,11 @@ export function DateStats({
                           : ru.participants}
                     </span>
                   </div>
+                  {stat.participants && stat.participants.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {stat.participants.join(", ")}
+                    </p>
+                  )}
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-green-500 transition-all"

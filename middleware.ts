@@ -19,6 +19,24 @@ export default middlewareAuth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
+  const needsProfileName =
+    !!session?.user?.id && !session.user.name?.trim();
+  const profileExemptPaths = [
+    "/login/complete-profile",
+    "/login",
+    "/error",
+    "/api/auth",
+  ];
+  const isProfileExempt = profileExemptPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
+
+  if (needsProfileName && isProtected && !isProfileExempt) {
+    const profileUrl = new URL("/login/complete-profile", req.url);
+    profileUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(profileUrl);
+  }
+
   return NextResponse.next();
 });
 
