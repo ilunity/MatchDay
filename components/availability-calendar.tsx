@@ -93,10 +93,11 @@ export function AvailabilityCalendar({
           {isEditing ? ru.availabilityHint : ru.availabilityViewHint}
         </p>
       </div>
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="space-y-4">
-          <div className="overflow-x-auto rounded-lg border bg-card p-2">
+      <div className="w-full space-y-8">
+        <div className="w-full space-y-4">
+          <div className="w-full overflow-x-auto rounded-lg border bg-card p-2">
             <Calendar
+              size="lg"
               mode="multiple"
               selected={selected}
               onSelect={isEditing ? handleSelect : undefined}
@@ -143,7 +144,7 @@ export function AvailabilityCalendar({
             </div>
           )}
         </div>
-        {statsAside}
+        {statsAside && <div className="w-full">{statsAside}</div>}
       </div>
     </div>
   );

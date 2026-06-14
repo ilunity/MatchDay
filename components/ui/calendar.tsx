@@ -17,20 +17,40 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const DAY_CELL = "h-[42px] w-[42px] p-0";
-const GRID_WIDTH = "w-[294px]";
+const CALENDAR_SIZES = {
+  sm: {
+    dayCell: "h-[42px] w-[42px] p-0",
+    gridWidth: "w-[294px]",
+    dayNumber: "text-sm",
+    participantCount: "text-[0.65rem]",
+    weekday: "text-[0.8rem]",
+  },
+  lg: {
+    dayCell: "h-[71px] w-[71px] p-0",
+    gridWidth: "w-[497px]",
+    dayNumber: "text-base",
+    participantCount: "text-xs",
+    weekday: "text-sm",
+  },
+} as const;
+
+export type CalendarSize = keyof typeof CALENDAR_SIZES;
 
 type DayButtonOptions = {
+  size: CalendarSize;
   participantsByDate: Record<string, string[]>;
   showParticipantTooltip: boolean;
   readOnly: boolean;
 };
 
 function createDayButton({
+  size,
   participantsByDate,
   showParticipantTooltip,
   readOnly,
 }: DayButtonOptions) {
+  const { dayCell, dayNumber, participantCount } = CALENDAR_SIZES[size];
+
   return function AvailabilityDayButton({
     day,
     modifiers,
@@ -57,7 +77,7 @@ function createDayButton({
       <button
         type="button"
         className={cn(
-          DAY_CELL,
+          dayCell,
           "relative inline-flex flex-col items-center justify-center gap-0.5 rounded-md text-xs font-normal",
           readOnly
             ? "cursor-default hover:opacity-100"
@@ -82,11 +102,12 @@ function createDayButton({
         tabIndex={readOnly ? -1 : props.tabIndex}
         {...props}
       >
-        <span className="text-sm leading-none">{day.date.getDate()}</span>
+        <span className={cn("leading-none", dayNumber)}>{day.date.getDate()}</span>
         {names.length > 0 && (
           <span
             className={cn(
-              "text-[0.65rem] font-medium leading-none",
+              "font-medium leading-none",
+              participantCount,
               isSelected
                 ? "text-green-300 dark:text-green-300"
                 : "text-green-600 dark:text-green-400"
@@ -119,6 +140,7 @@ function createDayButton({
 }
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  size?: CalendarSize;
   possibleDates?: Date[];
   bestDates?: string[];
   participantsByDate?: Record<string, string[]>;
@@ -129,6 +151,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
 function Calendar({
   className,
   classNames,
+  size = "lg",
   showOutsideDays = true,
   possibleDates,
   bestDates = [],
@@ -141,15 +164,17 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
+  const { dayCell, gridWidth, weekday } = CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
   const DayButton = React.useMemo(
     () =>
       createDayButton({
+        size,
         participantsByDate,
         showParticipantTooltip,
         readOnly,
       }),
-    [participantsByDate, showParticipantTooltip, readOnly]
+    [size, participantsByDate, showParticipantTooltip, readOnly]
   );
 
   return (
@@ -176,21 +201,22 @@ function Calendar({
           defaultClassNames.button_next
         ),
         month_grid: cn(
-          GRID_WIDTH,
+          gridWidth,
           "table-fixed border-collapse",
           defaultClassNames.month_grid
         ),
         weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground font-normal text-[0.8rem] text-center align-middle",
-          DAY_CELL,
+          "text-muted-foreground font-normal text-center align-middle",
+          dayCell,
+          weekday,
           defaultClassNames.weekday
         ),
         weeks: cn(defaultClassNames.weeks),
         week: cn(defaultClassNames.week),
         day: cn(
           "relative p-0 text-center text-sm align-middle",
-          DAY_CELL,
+          dayCell,
           defaultClassNames.day
         ),
         day_button: cn(defaultClassNames.day_button),

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import { ru } from "@/lib/i18n/ru";
+import { linkifyText } from "@/lib/linkify";
 
 type EventHeaderProps = {
   title: string;
@@ -46,7 +47,7 @@ export function EventHeader({
           )}
           {description && (
             <p className="whitespace-pre-wrap text-lg leading-relaxed text-muted-foreground">
-              {description}
+              {linkifyText(description)}
             </p>
           )}
           <div className="clear-both" />

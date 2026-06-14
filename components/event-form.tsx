@@ -123,6 +123,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         </p>
         <div className="overflow-x-auto rounded-lg border bg-card p-2">
           <Calendar
+            size="sm"
             mode="multiple"
             selected={selectedDates}
             onSelect={(dates) => setSelectedDates(dates ?? [])}

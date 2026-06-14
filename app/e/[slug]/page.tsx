@@ -58,40 +58,42 @@ export default async function EventPage({ params }: PageProps) {
     : undefined;
 
   return (
-    <div className="container max-w-4xl px-4 py-8">
-      <GuestNameForm eventSlug={slug} open={needsGuestName} />
-      <CompleteProfileForm open={needsProfileName} />
+    <>
+      <div className="container max-w-4xl px-4 py-8">
+        <GuestNameForm eventSlug={slug} open={needsGuestName} />
+        <CompleteProfileForm open={needsProfileName} />
 
-      <EventHeader
-        title={event.title}
-        description={event.description}
-        coverUrl={coverUrl}
-        actions={
-          isOwner ? (
-            <Link href={`/events/${slug}/edit`}>
-              <Button variant="outline">{ru.edit}</Button>
-            </Link>
-          ) : undefined
-        }
-        meta={
-          session?.user?.name?.trim() ? (
-            <p className="text-sm text-muted-foreground">
-              {ru.welcomeUser} {session.user.name}
-            </p>
-          ) : !session && guestName ? (
-            <p className="text-sm text-muted-foreground">
-              {ru.welcomeGuest} {guestName}
-            </p>
-          ) : undefined
-        }
-      />
+        <EventHeader
+          title={event.title}
+          description={event.description}
+          coverUrl={coverUrl}
+          actions={
+            isOwner ? (
+              <Link href={`/events/${slug}/edit`}>
+                <Button variant="outline">{ru.edit}</Button>
+              </Link>
+            ) : undefined
+          }
+          meta={
+            session?.user?.name?.trim() ? (
+              <p className="text-sm text-muted-foreground">
+                {ru.welcomeUser} {session.user.name}
+              </p>
+            ) : !session && guestName ? (
+              <p className="text-sm text-muted-foreground">
+                {ru.welcomeGuest} {guestName}
+              </p>
+            ) : undefined
+          }
+        />
 
-      <div className="mt-8 space-y-2">
-        <h2 className="text-sm font-medium">{ru.shareLink}</h2>
-        <ShareLink url={shareUrl} />
+        <div className="mt-8 space-y-2">
+          <h2 className="text-sm font-medium">{ru.shareLink}</h2>
+          <ShareLink url={shareUrl} />
+        </div>
       </div>
 
-      <div className="mt-10">
+      <div className="mt-10 w-full px-4 pb-8">
         <AvailabilityCalendar
           eventId={event._id.toString()}
           eventSlug={slug}
@@ -105,6 +107,6 @@ export default async function EventPage({ params }: PageProps) {
           }
         />
       </div>
-    </div>
+    </>
   );
 }
