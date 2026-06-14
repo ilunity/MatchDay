@@ -29,43 +29,28 @@ function createDayButton(dateParticipants: Record<string, string[]>) {
     const key = dateKey(day.date);
     const names = dateParticipants[key] ?? [];
     const isSelected = modifiers.selected;
-    const isBest = modifiers.best;
     const isPossible = modifiers.possible;
     const isDisabled = modifiers.disabled;
     const isToday = modifiers.today;
 
     const backgroundClass = isSelected
-      ? "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
-      : isBest
-        ? "bg-green-200 text-green-900 dark:bg-green-900 dark:text-green-100"
-        : isPossible
-          ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
-          : isToday
-            ? "bg-accent text-accent-foreground"
-            : "";
-
-    const participantLabel =
-      names.length === 0
-        ? ""
-        : names.length === 1
-          ? names[0].length > 5
-            ? `${names[0].slice(0, 4)}…`
-            : names[0]
-          : String(names.length);
+      ? "bg-blue-600 text-white hover:bg-blue-600 hover:text-white"
+      : isPossible
+        ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
+        : isToday
+          ? "bg-accent text-accent-foreground"
+          : "";
 
     const tooltip =
-      names.length > 0
-        ? `${names.join(", ")}`
-        : undefined;
+      names.length > 0 ? names.join(", ") : undefined;
 
     return (
       <button
         type="button"
         className={cn(
           DAY_SIZE,
-          "relative inline-flex flex-col items-center justify-center gap-0 p-0 text-xs font-normal",
-          "hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          !isSelected && "rounded-md",
+          "relative inline-flex flex-col items-center justify-center gap-0.5 rounded-md p-0 text-xs font-normal",
+          "hover:opacity-90 focus-visible:outline-none",
           backgroundClass,
           isDisabled && "cursor-not-allowed opacity-50",
           className
@@ -80,13 +65,8 @@ function createDayButton(dateParticipants: Record<string, string[]>) {
       >
         <span className="text-sm leading-none">{day.date.getDate()}</span>
         {names.length > 0 && (
-          <span
-            className={cn(
-              "max-w-full truncate px-0.5 text-[0.6rem] leading-none",
-              isSelected ? "text-primary-foreground/80" : "opacity-70"
-            )}
-          >
-            {participantLabel}
+          <span className="text-[0.65rem] font-medium leading-none text-green-600 dark:text-green-400">
+            {names.length}
           </span>
         )}
       </button>

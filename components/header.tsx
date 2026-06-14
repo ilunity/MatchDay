@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
-import { ProfileNameEdit } from "@/components/profile-name-edit";
+import { UserBadge } from "@/components/user-badge";
 
 export async function Header() {
   const session = await auth();
@@ -16,7 +16,7 @@ export async function Header() {
         <nav className="flex items-center gap-2 sm:gap-4">
           {session ? (
             <>
-              <ProfileNameEdit initialName={session.user.name} />
+              <UserBadge initialName={session.user.name} />
               <Link
                 href="/dashboard"
                 className="text-sm text-muted-foreground hover:text-foreground"
@@ -26,16 +26,6 @@ export async function Header() {
               <Link href="/events/new">
                 <Button size="sm">{ru.createEvent}</Button>
               </Link>
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
-                <Button type="submit" variant="ghost" size="sm">
-                  {ru.logout}
-                </Button>
-              </form>
             </>
           ) : (
             <Link href="/login">
