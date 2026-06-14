@@ -257,6 +257,7 @@ function Calendar({
       locale={ruLocale}
       showOutsideDays={showOutsideDays}
       captionLayout="dropdown"
+      navLayout="around"
       defaultMonth={defaultMonth}
       startMonth={startMonth}
       endMonth={endMonth}
@@ -266,7 +267,7 @@ function Calendar({
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
         month: cn("flex flex-col gap-4", defaultClassNames.month),
         month_caption: cn(
-          "flex justify-center pt-1 relative items-center w-full px-8",
+          "flex justify-center pt-1 relative items-center",
           defaultClassNames.month_caption
         ),
         caption_label: cn("text-sm font-medium", defaultClassNames.caption_label),
@@ -284,11 +285,11 @@ function Calendar({
         ),
         nav: cn("flex items-center gap-1", defaultClassNames.nav),
         button_previous: cn(
-          "absolute left-1 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
+          "absolute left-1 z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
           defaultClassNames.button_previous
         ),
         button_next: cn(
-          "absolute right-1 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
+          "absolute right-1 z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
           defaultClassNames.button_next
         ),
         month_grid: cn(
