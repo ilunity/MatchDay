@@ -5,7 +5,7 @@ import { setAvailability } from "@/actions/availability";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { dateKey } from "@/lib/dates";
+import { dateKey, normalizeDates } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { toast } from "sonner";
 
@@ -40,11 +40,13 @@ export function AvailabilityCalendar({
 }) {
   const possibleSet = new Set(possibleDates.map(dateKey));
   const [isEditing, setIsEditing] = useState(false);
-  const [selected, setSelected] = useState<Date[]>(initialSelected);
+  const [selected, setSelected] = useState<Date[]>(() =>
+    normalizeDates(initialSelected)
+  );
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    setSelected(initialSelected);
+    setSelected(normalizeDates(initialSelected));
   }, [initialSelected]);
 
   const hasChanges = useMemo(
@@ -60,7 +62,9 @@ export function AvailabilityCalendar({
       setSelected([]);
       return;
     }
-    const filtered = dates.filter((d) => possibleSet.has(dateKey(d)));
+    const filtered = normalizeDates(
+      dates.filter((d) => possibleSet.has(dateKey(d)))
+    );
     setSelected(filtered);
   }
 

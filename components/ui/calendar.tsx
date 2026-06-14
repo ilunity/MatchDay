@@ -61,6 +61,7 @@ type DayButtonOptions = {
   showParticipantTooltip: boolean;
   readOnly: boolean;
   currentUserName?: string;
+  selectedDateKeys: Set<string>;
 };
 
 function createDayButton({
@@ -69,6 +70,7 @@ function createDayButton({
   showParticipantTooltip,
   readOnly,
   currentUserName,
+  selectedDateKeys,
 }: DayButtonOptions) {
   const { dayCell, dayNumber, participantCount } = CALENDAR_SIZES[size];
 
@@ -81,18 +83,9 @@ function createDayButton({
   }: DayButtonProps) {
     const key = dateKey(day.date);
     const names = participantsByDate[key] ?? [];
-    const isSelected = modifiers.selected;
-    const isPossible = modifiers.possible;
+    const isSelected =
+      selectedDateKeys.has(key) || Boolean(modifiers.selected);
     const isDisabled = modifiers.disabled;
-    const isToday = modifiers.today;
-
-    const backgroundClass = isSelected
-      ? "border-0 bg-sky-200 text-blue-900 ring-0 outline-none hover:bg-sky-200 hover:text-blue-900 dark:bg-sky-900 dark:text-sky-100 dark:hover:bg-sky-900 dark:hover:text-sky-100"
-      : isPossible
-        ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100"
-        : isToday
-          ? "bg-accent text-accent-foreground"
-          : "";
 
     const cursorClass = isDisabled
       ? "cursor-not-allowed"
@@ -112,7 +105,6 @@ function createDayButton({
           readOnly
             ? "hover:opacity-100"
             : "hover:opacity-90 focus-visible:outline-none",
-          backgroundClass,
           isDisabled && "opacity-50",
           className
         )}
@@ -299,6 +291,13 @@ function Calendar({
   const { dayColumn, weekdayCell, dayBox, gridWidth, cssVars, weekday } =
     CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
+  const selectedDateKeys = React.useMemo(() => {
+    const dates =
+      props.mode === "multiple" && Array.isArray(props.selected)
+        ? props.selected
+        : [];
+    return new Set(dates.map(dateKey));
+  }, [props.mode, props.mode === "multiple" ? props.selected : null]);
   const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);
   const { startMonth, endMonth } = getCalendarMonthBounds(possibleDates);
   const monthsWithPossible = React.useMemo(
@@ -324,8 +323,16 @@ function Calendar({
         showParticipantTooltip,
         readOnly,
         currentUserName,
+        selectedDateKeys,
       }),
-    [size, participantsByDate, showParticipantTooltip, readOnly, currentUserName]
+    [
+      size,
+      participantsByDate,
+      showParticipantTooltip,
+      readOnly,
+      currentUserName,
+      selectedDateKeys,
+    ]
   );
   const navButtons = React.useMemo(
     () => createMonthNavButtons(monthsWithPossible),
@@ -404,7 +411,7 @@ function Calendar({
           defaultClassNames.day
         ),
         day_button: cn("size-full", defaultClassNames.day_button),
-        selected: "",
+        selected: defaultClassNames.selected,
         today: cn(defaultClassNames.today),
         outside: cn("text-muted-foreground opacity-50", defaultClassNames.outside),
         disabled: cn("text-muted-foreground opacity-50", defaultClassNames.disabled),
@@ -432,7 +439,6 @@ function Calendar({
       modifiersClassNames={{
         possible: "",
         best: "",
-        selected: "",
         ...modifiersClassNames,
       }}
       {...props}

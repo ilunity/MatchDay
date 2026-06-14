@@ -4,6 +4,7 @@ import { getEventStats } from "@/actions/events";
 import { getUserAvailability } from "@/actions/availability";
 import { auth } from "@/lib/auth";
 import { getGuestId, getGuestName } from "@/lib/guest";
+import { normalizeDates } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { CompleteProfileForm } from "@/components/complete-profile-form";
@@ -46,9 +47,13 @@ export default async function EventPage({ params }: PageProps) {
   const needsProfileName = !!session?.user?.id && !session.user.name?.trim();
   const calendarDisabled = needsGuestName || needsProfileName;
 
-  const possibleDates = event.possibleDates.map((d) => new Date(d));
+  const possibleDates = normalizeDates(
+    event.possibleDates.map((d) => new Date(d))
+  );
   const userAvailability = await getUserAvailability(event._id.toString());
-  const initialSelected = userAvailability.map((d) => new Date(d));
+  const initialSelected = normalizeDates(
+    userAvailability.map((d) => new Date(d))
+  );
   const bestDates = stats.slice(0, 3).map((s) => s.date);
   const currentUserName =
     session?.user?.name?.trim() || guestName?.trim() || undefined;

@@ -30,6 +30,31 @@
   height: var(--rdp-day-height);
 }
 
+/* Selected day fill — rdp's `.rdp-day_button { background: none }` overrides Tailwind bg-* */
+.rdp-selected {
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+.rdp-selected .rdp-day_button {
+  border-color: transparent;
+  background-color: rgb(147 197 253); /* blue-300 */
+  color: rgb(30 58 138); /* blue-900 */
+}
+
+.rdp-selected .rdp-day_button:hover {
+  background-color: rgb(147 197 253);
+  color: rgb(30 58 138);
+}
+
+@media (prefers-color-scheme: dark) {
+  .rdp-selected .rdp-day_button,
+  .rdp-selected .rdp-day_button:hover {
+    background-color: rgb(30 64 175); /* blue-800 */
+    color: rgb(248 250 252); /* slate-50 */
+  }
+}
+
 :root {
   --background: #fafafa;
   --pattern-dot: color-mix(in srgb, var(--foreground) 9%, transparent);
