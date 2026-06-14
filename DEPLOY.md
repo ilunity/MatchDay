@@ -74,7 +74,9 @@ CapRover сохраняет named volumes между деплоями. В `docke
 
 ### 5. Сеть и порты
 
-- Только сервис `app` доступен через CapRover reverse proxy (порт 3000)
+- Сервис `app` слушает порт **3000 внутри контейнера**; CapRover проксирует HTTPS-трафик по настройке **Container HTTP Port** (3000)
+- В production `docker-compose.yml` нет `expose` и `ports` — публикация наружу делает CapRover
+- `ports` заданы только в `docker-compose.local.yml` для доступа с localhost при разработке
 - MongoDB и MinIO работают во **внутренней** сети `matchday` без публичных портов
 - MinIO bucket инициализируется контейнером `minio-init` при первом запуске
 
