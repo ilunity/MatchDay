@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CalendarPlus } from "lucide-react";
 import { getUserEvents } from "@/actions/events";
 import { EventDashboardCard } from "@/components/event-dashboard-card";
 import { ru } from "@/lib/i18n/ru";
@@ -16,7 +17,10 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground">{ru.dashboard}</p>
         </div>
         <Link href="/events/new">
-          <Button>{ru.createEvent}</Button>
+          <Button>
+            <CalendarPlus className="h-4 w-4" />
+            {ru.createEvent}
+          </Button>
         </Link>
       </div>
 
@@ -25,7 +29,10 @@ export default async function DashboardPage() {
           <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
             <p className="text-muted-foreground">{ru.noEvents}</p>
             <Link href="/events/new">
-              <Button>{ru.createFirst}</Button>
+              <Button>
+                <CalendarPlus className="h-4 w-4" />
+                {ru.createFirst}
+              </Button>
             </Link>
           </CardContent>
         </Card>
