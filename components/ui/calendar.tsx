@@ -3,6 +3,7 @@
 import * as React from "react";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import { ru as ruLocale } from "react-day-picker/locale";
+import { dateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -48,9 +49,9 @@ function Calendar({
           defaultClassNames.button_next
         ),
         month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
-        weekdays: cn("flex", defaultClassNames.weekdays),
+        weekdays: cn("flex w-full", defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+          "text-muted-foreground w-9 h-9 flex items-center justify-center font-normal text-[0.8rem]",
           defaultClassNames.weekday
         ),
         week: cn("flex w-full mt-2", defaultClassNames.week),
@@ -82,12 +83,12 @@ function Calendar({
       }}
       modifiers={{
         possible: possibleDates ?? [],
-        best: (date) => bestSet.has(date.toISOString().slice(0, 10)),
+        best: (date) => bestSet.has(dateKey(date)),
         ...modifiers,
       }}
       modifiersClassNames={{
         possible: "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100 rounded-md",
-        best: "ring-2 ring-green-500 ring-offset-1 rounded-md",
+        best: "bg-blue-200 text-blue-900 dark:bg-blue-900 dark:text-blue-100 rounded-md",
         ...modifiersClassNames,
       }}
       {...props}

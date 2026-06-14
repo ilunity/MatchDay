@@ -83,7 +83,7 @@ export default async function EventPage({ params }: PageProps) {
         <ShareLink url={shareUrl} />
       </div>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <div className="mt-10">
         <AvailabilityCalendar
           eventId={event._id.toString()}
           eventSlug={slug}
@@ -91,8 +91,10 @@ export default async function EventPage({ params }: PageProps) {
           initialSelected={initialSelected}
           bestDates={bestDates}
           disabled={needsGuestName}
+          statsAside={
+            <DateStats stats={stats} totalParticipants={totalParticipants} />
+          }
         />
-        <DateStats stats={stats} totalParticipants={totalParticipants} />
       </div>
     </div>
   );

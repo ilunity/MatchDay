@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { setAvailability } from "@/actions/availability";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export function AvailabilityCalendar({
   initialSelected,
   bestDates,
   disabled,
+  statsAside,
 }: {
   eventId: string;
   eventSlug: string;
@@ -22,6 +23,7 @@ export function AvailabilityCalendar({
   initialSelected: Date[];
   bestDates: string[];
   disabled?: boolean;
+  statsAside?: ReactNode;
 }) {
   const possibleSet = new Set(possibleDates.map(dateKey));
   const [selected, setSelected] = useState<Date[]>(initialSelected);
@@ -60,23 +62,28 @@ export function AvailabilityCalendar({
         <h3 className="text-lg font-semibold">{ru.yourAvailability}</h3>
         <p className="text-sm text-muted-foreground">{ru.availabilityHint}</p>
       </div>
-      <div className="overflow-x-auto rounded-lg border bg-card p-2">
-        <Calendar
-          mode="multiple"
-          selected={selected}
-          onSelect={handleSelect}
-          possibleDates={possibleDates}
-          bestDates={bestDates}
-          disabled={disabled ? true : isDayDisabled}
-          numberOfMonths={1}
-          className="mx-auto"
-        />
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="space-y-4">
+          <div className="overflow-x-auto rounded-lg border bg-card p-2">
+            <Calendar
+              mode="multiple"
+              selected={selected}
+              onSelect={handleSelect}
+              possibleDates={possibleDates}
+              bestDates={bestDates}
+              disabled={disabled ? true : isDayDisabled}
+              numberOfMonths={1}
+              className="mx-auto"
+            />
+          </div>
+          {!disabled && (
+            <Button onClick={handleSave} disabled={pending} className="w-full sm:w-auto">
+              {pending ? ru.loading : ru.saveAvailability}
+            </Button>
+          )}
+        </div>
+        {statsAside}
       </div>
-      {!disabled && (
-        <Button onClick={handleSave} disabled={pending} className="w-full sm:w-auto">
-          {pending ? ru.loading : ru.saveAvailability}
-        </Button>
-      )}
     </div>
   );
 }
