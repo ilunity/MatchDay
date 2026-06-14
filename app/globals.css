@@ -3,8 +3,8 @@
 
 :root {
   --background: #fafafa;
-  --pattern-dot: color-mix(in srgb, var(--foreground) 6%, transparent);
-  --pattern-glow: color-mix(in srgb, var(--primary) 10%, transparent);
+  --pattern-dot: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --pattern-glow: color-mix(in srgb, var(--primary) 14%, transparent);
   --foreground: #0a0a0a;
   --card: #ffffff;
   --card-foreground: #0a0a0a;
@@ -54,8 +54,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --pattern-dot: color-mix(in srgb, var(--foreground) 4%, transparent);
-    --pattern-glow: color-mix(in srgb, var(--primary) 8%, transparent);
+    --pattern-dot: color-mix(in srgb, var(--foreground) 6%, transparent);
+    --pattern-glow: color-mix(in srgb, var(--primary) 11%, transparent);
     --foreground: #fafafa;
     --card: #18181b;
     --card-foreground: #fafafa;
