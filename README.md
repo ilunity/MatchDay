@@ -14,7 +14,8 @@
 
 ```bash
 cp .env.example .env
-# Заполните NEXTAUTH_SECRET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, SMTP_*
+# Заполните NEXTAUTH_SECRET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+# SMTP_CONSOLE=true по умолчанию в docker-compose.local.yml — magic link в логах контейнера app
 
 docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 ```
@@ -30,7 +31,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Требуются локальные MongoDB, MinIO и SMTP.
+Требуются локальные MongoDB и MinIO. Для auth задайте `SMTP_CONSOLE=true` — ссылка появится в консоли.
 
 ## Деплой
 
