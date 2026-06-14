@@ -16,7 +16,6 @@ export async function Header() {
         <nav className="flex items-center gap-2 sm:gap-4">
           {session ? (
             <>
-              <UserBadge initialName={session.user.name} />
               <Link
                 href="/dashboard"
                 className="text-sm text-muted-foreground hover:text-foreground"
@@ -26,6 +25,7 @@ export async function Header() {
               <Link href="/events/new">
                 <Button size="sm">{ru.createEvent}</Button>
               </Link>
+              <UserBadge initialName={session.user.name} />
             </>
           ) : (
             <Link href="/login">

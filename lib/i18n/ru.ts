@@ -39,7 +39,7 @@ export const ru = {
   availabilityViewHint: "Наведите на день, чтобы увидеть, кто может",
   markDates: "Отметить даты",
   cancelEdit: "Отмена",
-  saveAvailability: "Сохранить доступность",
+  saveAvailability: "Сохранить",
   availabilitySaved: "Доступность сохранена",
   bestDates: "Лучшие даты",
   bestDatesHint: "Даты, когда доступно больше всего участников",
