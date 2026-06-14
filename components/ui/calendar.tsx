@@ -4,10 +4,17 @@ import * as React from "react";
 import {
   DayPicker,
   getDefaultClassNames,
+  useDayPicker,
   type DayButtonProps,
 } from "react-day-picker";
 import { ru as ruLocale } from "react-day-picker/locale";
-import { dateKey } from "@/lib/dates";
+import {
+  dateKey,
+  getCalendarMonthBounds,
+  getDefaultMonth,
+  getMonthsWithPossibleDates,
+  monthKey,
+} from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -146,6 +153,53 @@ function createDayButton({
   };
 }
 
+function createMonthNavButtons(monthsWithPossible: Set<string>) {
+  function PreviousMonthButton(props: React.ComponentProps<"button">) {
+    const { previousMonth, components } = useDayPicker();
+    const showBadge =
+      previousMonth !== undefined &&
+      monthsWithPossible.has(monthKey(previousMonth));
+
+    return (
+      <components.Button
+        {...props}
+        className={cn(props.className, showBadge && "relative")}
+      >
+        {props.children}
+        {showBadge && (
+          <span
+            className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-blue-600 dark:bg-blue-400"
+            aria-hidden
+          />
+        )}
+      </components.Button>
+    );
+  }
+
+  function NextMonthButton(props: React.ComponentProps<"button">) {
+    const { nextMonth, components } = useDayPicker();
+    const showBadge =
+      nextMonth !== undefined && monthsWithPossible.has(monthKey(nextMonth));
+
+    return (
+      <components.Button
+        {...props}
+        className={cn(props.className, showBadge && "relative")}
+      >
+        {props.children}
+        {showBadge && (
+          <span
+            className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-blue-600 dark:bg-blue-400"
+            aria-hidden
+          />
+        )}
+      </components.Button>
+    );
+  }
+
+  return { PreviousMonthButton, NextMonthButton };
+}
+
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   size?: CalendarSize;
   possibleDates?: Date[];
@@ -170,11 +224,18 @@ function Calendar({
   modifiers,
   modifiersClassNames,
   components,
+  defaultMonth: defaultMonthProp,
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
   const { dayCell, gridWidth, weekday } = CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
+  const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);
+  const { startMonth, endMonth } = getCalendarMonthBounds(possibleDates);
+  const monthsWithPossible = React.useMemo(
+    () => getMonthsWithPossibleDates(possibleDates ?? []),
+    [possibleDates]
+  );
   const DayButton = React.useMemo(
     () =>
       createDayButton({
@@ -186,21 +247,41 @@ function Calendar({
       }),
     [size, participantsByDate, showParticipantTooltip, readOnly, currentUserName]
   );
+  const navButtons = React.useMemo(
+    () => createMonthNavButtons(monthsWithPossible),
+    [monthsWithPossible]
+  );
 
   return (
     <DayPicker
       locale={ruLocale}
       showOutsideDays={showOutsideDays}
+      captionLayout="dropdown"
+      defaultMonth={defaultMonth}
+      startMonth={startMonth}
+      endMonth={endMonth}
       className={cn("p-3", className)}
       classNames={{
         root: cn("w-fit", defaultClassNames.root),
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
         month: cn("flex flex-col gap-4", defaultClassNames.month),
         month_caption: cn(
-          "flex justify-center pt-1 relative items-center w-full",
+          "flex justify-center pt-1 relative items-center w-full px-8",
           defaultClassNames.month_caption
         ),
         caption_label: cn("text-sm font-medium", defaultClassNames.caption_label),
+        dropdowns: cn(
+          "flex items-center justify-center gap-1.5 text-sm font-medium",
+          defaultClassNames.dropdowns
+        ),
+        dropdown_root: cn(
+          "relative rounded-md border border-input shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px]",
+          defaultClassNames.dropdown_root
+        ),
+        dropdown: cn(
+          "absolute inset-0 cursor-pointer opacity-0",
+          defaultClassNames.dropdown
+        ),
         nav: cn("flex items-center gap-1", defaultClassNames.nav),
         button_previous: cn(
           "absolute left-1 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
@@ -245,6 +326,7 @@ function Calendar({
             <ChevronRight className="h-4 w-4" />
           ),
         DayButton,
+        ...navButtons,
         ...components,
       }}
       modifiers={{

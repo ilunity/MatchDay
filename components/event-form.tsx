@@ -127,6 +127,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             mode="multiple"
             selected={selectedDates}
             onSelect={(dates) => setSelectedDates(dates ?? [])}
+            possibleDates={selectedDates}
             numberOfMonths={1}
             className="mx-auto"
           />
