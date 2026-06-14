@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { avatarUrlFromKey } from "@/lib/avatar";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
 import { UserBadge } from "@/components/user-badge";
@@ -28,7 +29,11 @@ export async function Header() {
                 <LayoutDashboard className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">{ru.dashboard}</span>
               </Link>
-              <UserBadge initialName={session.user.name} />
+              <UserBadge
+                userId={session.user.id}
+                initialName={session.user.name}
+                avatarUrl={avatarUrlFromKey(session.user.avatarKey)}
+              />
             </>
           ) : (
             <Link href="/login">

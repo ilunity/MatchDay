@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/profile-form";
 import { auth } from "@/lib/auth";
+import { avatarUrlFromKey } from "@/lib/avatar";
 import { ru } from "@/lib/i18n/ru";
 
 export default async function ProfilePage() {
@@ -16,7 +17,11 @@ export default async function ProfilePage() {
         <h1 className="text-2xl font-bold sm:text-3xl">{ru.profile}</h1>
         <p className="text-muted-foreground">{ru.profileHint}</p>
       </div>
-      <ProfileForm initialName={session.user.name} />
+      <ProfileForm
+        userId={session.user.id}
+        initialName={session.user.name}
+        initialAvatarUrl={avatarUrlFromKey(session.user.avatarKey)}
+      />
     </div>
   );
 }

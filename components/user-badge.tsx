@@ -11,10 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/user-avatar";
 import { ru } from "@/lib/i18n/ru";
 import { ChevronDown, LogOut, User } from "lucide-react";
 
-export function UserBadge({ initialName }: { initialName?: string | null }) {
+type UserBadgeProps = {
+  userId: string;
+  initialName?: string | null;
+  avatarUrl?: string;
+};
+
+export function UserBadge({ userId, initialName, avatarUrl }: UserBadgeProps) {
   const displayName = initialName?.trim() || ru.setYourName;
 
   return (
@@ -23,8 +30,14 @@ export function UserBadge({ initialName }: { initialName?: string | null }) {
         <Button
           variant="ghost"
           size="sm"
-          className="min-h-11 gap-1 text-muted-foreground"
+          className="min-h-11 gap-2 text-muted-foreground"
         >
+          <UserAvatar
+            userId={userId}
+            name={displayName}
+            avatarUrl={avatarUrl}
+            size={28}
+          />
           <span className="max-w-[96px] truncate sm:max-w-[140px]">{displayName}</span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
         </Button>

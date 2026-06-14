@@ -4,6 +4,7 @@ export interface IUser {
   _id: mongoose.Types.ObjectId;
   email: string;
   name?: string;
+  avatarKey?: string;
   emailVerified?: Date;
   createdAt: Date;
 }
@@ -12,6 +13,7 @@ const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
     name: { type: String },
+    avatarKey: { type: String },
     emailVerified: { type: Date },
     createdAt: { type: Date, default: Date.now },
   },

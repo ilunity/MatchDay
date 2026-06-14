@@ -4,24 +4,35 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { updateUserName } from "@/actions/user";
+import { AvatarField } from "@/components/avatar-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ru } from "@/lib/i18n/ru";
 
-export function ProfileForm({ initialName }: { initialName?: string | null }) {
+type ProfileFormProps = {
+  userId: string;
+  initialName?: string | null;
+  initialAvatarUrl?: string;
+};
+
+export function ProfileForm({
+  userId,
+  initialName,
+  initialAvatarUrl,
+}: ProfileFormProps) {
   const router = useRouter();
   const { update } = useSession();
   const [name, setName] = useState(initialName ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    const formData = new FormData();
+    const formData = new FormData(e.currentTarget);
     formData.set("name", name);
 
     startTransition(async () => {
@@ -31,7 +42,7 @@ export function ProfileForm({ initialName }: { initialName?: string | null }) {
         return;
       }
 
-      await update({ name: result.name });
+      await update({ name: result.name, avatarKey: result.avatarKey ?? null });
       router.refresh();
     });
   }
@@ -39,7 +50,12 @@ export function ProfileForm({ initialName }: { initialName?: string | null }) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <AvatarField
+            userId={userId}
+            userName={name}
+            initialAvatarUrl={initialAvatarUrl}
+          />
           <div className="space-y-2">
             <Label htmlFor="profileName">{ru.yourName}</Label>
             <Input

@@ -1,6 +1,10 @@
 "use server";
 
 import { auth } from "@/lib/auth";
+import {
+  applyAvatarFromFormData,
+  type AvatarUploadError,
+} from "@/lib/avatar";
 import { connectDB } from "@/lib/db";
 import { updateUserNameSchema } from "@/lib/validations/user";
 import { User } from "@/models/User";
@@ -10,7 +14,14 @@ export type ActionResult = {
   success: boolean;
   error?: string;
   name?: string;
+  avatarKey?: string | null;
 };
+
+function avatarErrorMessage(error: AvatarUploadError): string {
+  if (error === "invalid_type") return "Допустимы только JPEG, PNG и WebP";
+  if (error === "too_large") return "Файл слишком большой (максимум 5 МБ)";
+  return "Ошибка загрузки аватара";
+}
 
 export async function updateUserName(formData: FormData): Promise<ActionResult> {
   const session = await auth();
@@ -30,9 +41,25 @@ export async function updateUserName(formData: FormData): Promise<ActionResult> 
   }
 
   await connectDB();
-  await User.findByIdAndUpdate(session.user.id, { name: parsed.data.name });
+
+  const user = await User.findById(session.user.id);
+  if (!user) {
+    return { success: false, error: "Пользователь не найден" };
+  }
+
+  user.name = parsed.data.name;
+  await user.save();
+
+  const avatarError = await applyAvatarFromFormData(user, formData);
+  if (avatarError) {
+    return { success: false, error: avatarErrorMessage(avatarError) };
+  }
 
   revalidatePath("/", "layout");
   revalidatePath("/profile");
-  return { success: true, name: parsed.data.name };
+  return {
+    success: true,
+    name: parsed.data.name,
+    avatarKey: user.avatarKey ?? null,
+  };
 }

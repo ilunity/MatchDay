@@ -14,8 +14,13 @@ export const authConfig = {
         token.id = user.id;
         token.name = user.name;
       }
-      if (trigger === "update" && session?.name) {
-        token.name = session.name;
+      if (trigger === "update" && session) {
+        if (session.name !== undefined) {
+          token.name = session.name;
+        }
+        if ("avatarKey" in session) {
+          token.avatarKey = session.avatarKey ?? null;
+        }
       }
       return token;
     },
@@ -24,6 +29,8 @@ export const authConfig = {
         session.user.id = token.sub;
         session.user.name =
           typeof token.name === "string" ? token.name : session.user.name;
+        session.user.avatarKey =
+          typeof token.avatarKey === "string" ? token.avatarKey : null;
       }
       return session;
     },
