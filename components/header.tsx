@@ -10,25 +10,29 @@ export async function Header() {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="cursor-pointer text-xl font-bold tracking-tight">
+      <div className="container mx-auto flex h-14 min-h-14 items-center justify-between gap-2 px-4 sm:h-16">
+        <Link
+          href="/"
+          className="cursor-pointer truncate text-lg font-bold tracking-tight sm:text-xl"
+        >
           {ru.appName}
         </Link>
-        <nav className="flex items-center gap-2 sm:gap-4">
+        <nav className="flex shrink-0 items-center gap-1 sm:gap-4">
           {session ? (
             <>
               <Link
                 href="/dashboard"
-                className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                aria-label={ru.dashboard}
+                className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground hover:text-foreground sm:px-0"
               >
-                <LayoutDashboard className="h-4 w-4" />
-                {ru.dashboard}
+                <LayoutDashboard className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{ru.dashboard}</span>
               </Link>
               <UserBadge initialName={session.user.name} />
             </>
           ) : (
             <Link href="/login">
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" className="min-h-11">
                 {ru.login}
               </Button>
             </Link>

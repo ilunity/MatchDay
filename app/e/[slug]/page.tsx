@@ -61,7 +61,7 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="container max-w-4xl px-4 py-8">
+      <div className="container max-w-4xl px-4 py-6 md:py-8">
         <GuestNameForm eventSlug={slug} open={needsGuestName} />
         <CompleteProfileForm open={needsProfileName} />
 
@@ -71,8 +71,8 @@ export default async function EventPage({ params }: PageProps) {
           coverUrl={coverUrl}
           actions={
             isOwner ? (
-              <Link href={`/events/${slug}/edit`}>
-                <Button variant="outline">{ru.edit}</Button>
+              <Link href={`/events/${slug}/edit`} className="block w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">{ru.edit}</Button>
               </Link>
             ) : undefined
           }
@@ -95,7 +95,7 @@ export default async function EventPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div className="container max-w-4xl px-4 pb-8 mt-10">
+      <div className="container max-w-4xl px-4 pb-6 md:pb-8 mt-6 md:mt-10">
         <AvailabilityCalendar
           eventId={event._id.toString()}
           eventSlug={slug}

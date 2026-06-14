@@ -13,11 +13,11 @@ export default async function DashboardPage() {
     <div className="container px-4 py-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{ru.myEvents}</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{ru.myEvents}</h1>
           <p className="text-muted-foreground">{ru.dashboard}</p>
         </div>
-        <Link href="/events/new">
-          <Button>
+        <Link href="/events/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">
             <CalendarPlus className="h-4 w-4" />
             {ru.createEvent}
           </Button>

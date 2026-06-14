@@ -23,8 +23,8 @@ export function EventHeader({
   return (
     <header className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <h1 className="text-3xl font-bold sm:text-4xl">{title}</h1>
-        {actions}
+        <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{title}</h1>
+        {actions ? <div className="w-full shrink-0 sm:w-auto">{actions}</div> : null}
       </div>
 
       {meta}

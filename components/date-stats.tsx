@@ -44,7 +44,7 @@ export function DateStats({
                     </span>
                   </div>
                   {stat.participants && stat.participants.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="break-words text-xs text-muted-foreground">
                       {stat.participants.join(", ")}
                     </p>
                   )}

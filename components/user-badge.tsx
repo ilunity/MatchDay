@@ -52,9 +52,9 @@ export function UserBadge({ initialName }: { initialName?: string | null }) {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 text-muted-foreground"
+          className="min-h-11 gap-1 text-muted-foreground"
         >
-          <span className="max-w-[140px] truncate">{displayName}</span>
+          <span className="max-w-[96px] truncate sm:max-w-[140px]">{displayName}</span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
         </Button>
       </DropdownMenuTrigger>

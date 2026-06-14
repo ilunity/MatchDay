@@ -85,7 +85,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         />
       </div>
 
-      <div className="max-w-[220px] sm:max-w-[260px]">
+      <div className="max-w-full sm:max-w-[260px]">
         <EventCoverField compact initialCoverUrl={initial?.coverUrl} />
       </div>
 
@@ -103,7 +103,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       </div>
 
       {mode === "create" && (
-        <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+        <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <Label htmlFor="requireAuth">{ru.requireAuth}</Label>
             <p className="text-sm text-muted-foreground">{ru.requireAuthHint}</p>
@@ -129,7 +129,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             onSelect={(dates) => setSelectedDates(dates ?? [])}
             possibleDates={selectedDates}
             numberOfMonths={1}
-            className="mx-auto"
+            className="mx-auto w-fit"
           />
         </div>
         {selectedDates.length === 0 && (

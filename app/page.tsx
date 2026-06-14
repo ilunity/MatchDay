@@ -10,29 +10,29 @@ export default async function HomePage() {
   return (
     <div className="container px-4 py-12 sm:py-20">
       <section className="mx-auto max-w-3xl text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
           {ru.heroTitle}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{ru.heroSubtitle}</p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
           {session ? (
             <>
-              <Link href="/events/new">
-                <Button size="lg">{ru.createEvent}</Button>
+              <Link href="/events/new" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">{ru.createEvent}</Button>
               </Link>
-              <Link href="/dashboard">
-                <Button size="lg" variant="outline">
+              <Link href="/dashboard" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   {ru.dashboard}
                 </Button>
               </Link>
             </>
           ) : (
             <>
-              <Link href="/login?callbackUrl=/events/new">
-                <Button size="lg">{ru.getStarted}</Button>
+              <Link href="/login?callbackUrl=/events/new" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">{ru.getStarted}</Button>
               </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline">
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   {ru.login}
                 </Button>
               </Link>

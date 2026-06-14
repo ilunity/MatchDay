@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
 import { setAvailability } from "@/actions/availability";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { dateKey } from "@/lib/dates";
@@ -86,6 +87,7 @@ export function AvailabilityCalendar({
   }
 
   const isDayDisabled = (date: Date) => !possibleSet.has(dateKey(date));
+  const isMdUp = useMediaQuery("(min-width: 768px)");
 
   return (
     <div className="space-y-4">
@@ -95,11 +97,11 @@ export function AvailabilityCalendar({
           {isEditing ? ru.availabilityHint : ru.availabilityViewHint}
         </p>
       </div>
-      <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-start">
+      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <div className="w-full shrink-0 lg:w-auto">
-          <div className="flex w-fit max-w-full flex-col overflow-x-auto rounded-lg border bg-card p-2">
+          <div className="mx-auto flex w-fit max-w-full flex-col overflow-x-auto rounded-lg border bg-card p-2 lg:mx-0">
             <Calendar
-              size="lg"
+              size={isMdUp ? "lg" : "sm"}
               mode="multiple"
               selected={selected}
               onSelect={isEditing ? handleSelect : undefined}

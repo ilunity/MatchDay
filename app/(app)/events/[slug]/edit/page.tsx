@@ -18,7 +18,7 @@ export default async function EditEventPage({ params }: PageProps) {
   return (
     <div className="container max-w-2xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">{ru.editEvent}</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">{ru.editEvent}</h1>
         <p className="text-muted-foreground">{ru.editEventHint}</p>
       </div>
       <EventForm

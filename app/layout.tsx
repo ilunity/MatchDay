@@ -27,10 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen overflow-x-hidden antialiased`}>
         <Providers>
           <Header />
-          <main>{children}</main>
+          <main className="overflow-x-hidden">{children}</main>
         </Providers>
       </body>
     </html>

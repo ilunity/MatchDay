@@ -41,7 +41,7 @@ export function EventDashboardCard({
         href={`/events/${slug}/edit`}
         aria-label={ru.edit}
         onClick={(e) => e.stopPropagation()}
-        className="absolute right-2 top-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+        className="absolute right-1 top-1 z-10 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:right-2 sm:top-2"
       >
         <Pencil className="h-4 w-4" />
       </Link>

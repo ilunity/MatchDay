@@ -17,8 +17,13 @@ export function ShareLink({ url }: { url: string }) {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      <Input readOnly value={url} className="font-mono text-sm" />
-      <Button type="button" variant="outline" onClick={handleCopy} className="shrink-0">
+      <Input readOnly value={url} className="min-h-11 font-mono text-sm" />
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleCopy}
+        className="min-h-11 w-full shrink-0 sm:w-auto"
+      >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         {copied ? ru.copied : ru.copyLink}
       </Button>
