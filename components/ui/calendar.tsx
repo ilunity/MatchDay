@@ -6,6 +6,7 @@ import {
   getDefaultClassNames,
   useDayPicker,
   type DayButtonProps,
+  type DropdownProps,
 } from "react-day-picker";
 import { ru as ruLocale } from "react-day-picker/locale";
 import {
@@ -13,6 +14,7 @@ import {
   getCalendarMonthBounds,
   getDefaultMonth,
   getMonthsWithPossibleDates,
+  getYearsWithPossibleDates,
   monthKey,
 } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
@@ -200,6 +202,37 @@ function createMonthNavButtons(monthsWithPossible: Set<string>) {
   return { PreviousMonthButton, NextMonthButton };
 }
 
+function createPossibleDatesDropdowns(
+  monthsWithPossible: Set<string>,
+  yearsWithPossible: Set<number>
+) {
+  function MonthsDropdown(props: DropdownProps) {
+    const { components, months } = useDayPicker();
+    const currentYear = months[0]?.date.getFullYear();
+    const options = props.options?.map((option) => ({
+      ...option,
+      disabled:
+        option.disabled ||
+        (currentYear !== undefined &&
+          !monthsWithPossible.has(`${currentYear}-${option.value}`)),
+    }));
+
+    return <components.Dropdown {...props} options={options} />;
+  }
+
+  function YearsDropdown(props: DropdownProps) {
+    const { components } = useDayPicker();
+    const options = props.options?.map((option) => ({
+      ...option,
+      disabled: option.disabled || !yearsWithPossible.has(option.value),
+    }));
+
+    return <components.Dropdown {...props} options={options} />;
+  }
+
+  return { MonthsDropdown, YearsDropdown };
+}
+
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   size?: CalendarSize;
   possibleDates?: Date[];
@@ -235,6 +268,17 @@ function Calendar({
   const monthsWithPossible = React.useMemo(
     () => getMonthsWithPossibleDates(possibleDates ?? []),
     [possibleDates]
+  );
+  const yearsWithPossible = React.useMemo(
+    () => getYearsWithPossibleDates(possibleDates ?? []),
+    [possibleDates]
+  );
+  const possibleDatesDropdowns = React.useMemo(
+    () =>
+      possibleDates !== undefined
+        ? createPossibleDatesDropdowns(monthsWithPossible, yearsWithPossible)
+        : null,
+    [possibleDates, monthsWithPossible, yearsWithPossible]
   );
   const DayButton = React.useMemo(
     () =>
@@ -272,16 +316,24 @@ function Calendar({
         ),
         caption_label: cn("text-sm font-medium", defaultClassNames.caption_label),
         dropdowns: cn(
-          "flex items-center justify-center gap-1.5 text-sm font-medium",
+          "flex items-center justify-center gap-2 text-sm font-medium",
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative rounded-md border border-input shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px]",
+          "relative inline-flex min-h-8 items-center rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
           "absolute inset-0 cursor-pointer opacity-0",
           defaultClassNames.dropdown
+        ),
+        months_dropdown: cn(
+          "min-h-8 cursor-pointer",
+          defaultClassNames.months_dropdown
+        ),
+        years_dropdown: cn(
+          "min-h-8 cursor-pointer",
+          defaultClassNames.years_dropdown
         ),
         nav: cn("flex items-center gap-1", defaultClassNames.nav),
         button_previous: cn(
@@ -328,6 +380,7 @@ function Calendar({
           ),
         DayButton,
         ...navButtons,
+        ...possibleDatesDropdowns,
         ...components,
       }}
       modifiers={{

@@ -48,6 +48,10 @@ export function getMonthsWithPossibleDates(possibleDates: Date[]): Set<string> {
   return new Set(possibleDates.map(monthKey));
 }
 
+export function getYearsWithPossibleDates(possibleDates: Date[]): Set<number> {
+  return new Set(possibleDates.map((date) => date.getFullYear()));
+}
+
 export function getCalendarMonthBounds(possibleDates?: Date[]): {
   startMonth: Date;
   endMonth: Date;
