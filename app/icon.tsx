@@ -7,7 +7,42 @@ export const size = {
 
 export const contentType = "image/png";
 
+const COLS = 4;
+const ROWS = 3;
+const HIGHLIGHT_INDEX = 5;
+
 export default function Icon() {
+  const cells = Array.from({ length: COLS * ROWS }, (_, i) => {
+    const isHighlight = i === HIGHLIGHT_INDEX;
+    return (
+      <div
+        key={i}
+        style={{
+          width: 3,
+          height: 3,
+          borderRadius: 1,
+          background: isHighlight ? "#2563eb" : "#e2e8f0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isHighlight ? (
+          <svg width="4" height="4" viewBox="0 0 10 10">
+            <path
+              d="M1.5 5 L4 7.5 L8.5 2.5"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : null}
+      </div>
+    );
+  });
+
   return new ImageResponse(
     (
       <div
@@ -44,18 +79,12 @@ export default function Icon() {
               flex: 1,
               display: "flex",
               flexWrap: "wrap",
-              gap: 2,
+              gap: 1,
               padding: 2,
-              alignContent: "center",
-              justifyContent: "center",
+              alignContent: "flex-start",
             }}
           >
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#93c5fd" }} />
-            <div style={{ width: 3, height: 3, borderRadius: "50%", background: "#93c5fd" }} />
+            {cells}
           </div>
         </div>
       </div>

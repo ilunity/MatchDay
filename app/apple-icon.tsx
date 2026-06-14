@@ -7,7 +7,42 @@ export const size = {
 
 export const contentType = "image/png";
 
+const COLS = 7;
+const ROWS = 5;
+const HIGHLIGHT_INDEX = 17;
+
 export default function AppleIcon() {
+  const cells = Array.from({ length: COLS * ROWS }, (_, i) => {
+    const isHighlight = i === HIGHLIGHT_INDEX;
+    return (
+      <div
+        key={i}
+        style={{
+          width: 12,
+          height: 12,
+          borderRadius: 3,
+          background: isHighlight ? "#2563eb" : "#e2e8f0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isHighlight ? (
+          <svg width="10" height="10" viewBox="0 0 10 10">
+            <path
+              d="M1.5 5 L4 7.5 L8.5 2.5"
+              stroke="white"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : null}
+      </div>
+    );
+  });
+
   return new ImageResponse(
     (
       <div
@@ -44,18 +79,12 @@ export default function AppleIcon() {
               flex: 1,
               display: "flex",
               flexWrap: "wrap",
-              gap: 10,
-              padding: 14,
-              alignContent: "center",
-              justifyContent: "center",
+              gap: 4,
+              padding: 10,
+              alignContent: "flex-start",
             }}
           >
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#2563eb" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#93c5fd" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#93c5fd" }} />
+            {cells}
           </div>
         </div>
       </div>
