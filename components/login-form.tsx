@@ -48,9 +48,7 @@ export function LoginForm() {
         <CardHeader>
           <CardTitle>{ru.login}</CardTitle>
           <CardDescription>
-            {sent
-              ? ru.magicLinkSent
-              : "Введите email — мы отправим ссылку для входа"}
+            {sent ? ru.magicLinkSent : ru.loginDescription}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,7 +67,7 @@ export function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  placeholder="you@example.com"
+                  placeholder={ru.emailPlaceholder}
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}

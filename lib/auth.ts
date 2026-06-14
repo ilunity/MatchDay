@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { authConfig } from "@/lib/auth.config";
-import { isConsoleEmail, logMagicLinkToConsole } from "@/lib/email";
+import { isConsoleEmail, logMagicLinkToConsole, sendMagicLinkEmail } from "@/lib/email";
 import clientPromise from "@/lib/mongodb-client";
 
 const consoleEmail = isConsoleEmail();
@@ -24,15 +24,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           },
       from: emailFrom,
-      ...(consoleEmail && {
-        sendVerificationRequest({ identifier, url, provider }) {
-          logMagicLinkToConsole({
-            to: identifier,
-            url,
-            from: provider.from ?? emailFrom,
-          });
-        },
-      }),
+      sendVerificationRequest({ identifier, url, provider }) {
+        const from = provider.from ?? emailFrom;
+
+        if (consoleEmail) {
+          logMagicLinkToConsole({ to: identifier, url, from });
+          return;
+        }
+
+        return sendMagicLinkEmail({ to: identifier, url, from });
+      },
     }),
   ],
 });
