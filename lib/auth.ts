@@ -3,7 +3,12 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import Nodemailer from "next-auth/providers/nodemailer";
 import { authConfig } from "@/lib/auth.config";
 import { connectDB } from "@/lib/db";
-import { isConsoleEmail, logMagicLinkToConsole, sendMagicLinkEmail } from "@/lib/email";
+import {
+  getSmtpServerConfig,
+  isConsoleEmail,
+  logMagicLinkToConsole,
+  sendMagicLinkEmail,
+} from "@/lib/email";
 import clientPromise from "@/lib/mongodb-client";
 import { User } from "@/models/User";
 
@@ -43,14 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Nodemailer({
       server: consoleEmail
         ? { host: "localhost", port: 25, secure: false }
-        : {
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT ?? 587),
-            auth: {
-              user: process.env.SMTP_USER,
-              pass: process.env.SMTP_PASSWORD,
-            },
-          },
+        : getSmtpServerConfig(),
       from: emailFrom,
       sendVerificationRequest({ identifier, url, provider }) {
         const from = provider.from ?? emailFrom;

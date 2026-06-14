@@ -23,15 +23,22 @@ export function logMagicLinkToConsole({
   console.log(`${line}\n`);
 }
 
-function getSmtpTransport(): Transporter {
-  return createTransport({
+export function getSmtpServerConfig() {
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  return {
     host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
+    port,
+    secure: port === 465,
+    requireTLS: port === 587,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD,
     },
-  });
+  };
+}
+
+function getSmtpTransport(): Transporter {
+  return createTransport(getSmtpServerConfig());
 }
 
 export async function sendMagicLinkEmail({
@@ -46,11 +53,16 @@ export async function sendMagicLinkEmail({
   const transport = getSmtpTransport();
   const text = ru.magicLinkEmailText(url);
 
-  await transport.sendMail({
-    to,
-    from,
-    subject: ru.magicLinkEmailSubject,
-    text,
-    html: `<p>Перейдите по ссылке, чтобы войти в MatchDay:</p><p><a href="${url}">${url}</a></p><p>Ссылка действует ограниченное время.</p>`,
-  });
+  try {
+    await transport.sendMail({
+      to,
+      from,
+      subject: ru.magicLinkEmailSubject,
+      text,
+      html: `<p>Перейдите по ссылке, чтобы войти в MatchDay:</p><p><a href="${url}">${url}</a></p><p>Ссылка действует ограниченное время.</p>`,
+    });
+  } catch (error) {
+    console.error("SMTP send failed:", error);
+    throw error;
+  }
 }
