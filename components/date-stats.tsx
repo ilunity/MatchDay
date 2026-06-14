@@ -14,14 +14,14 @@ export function DateStats({
   const maxCount = stats[0]?.count ?? 0;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex h-full min-h-0 flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-lg">{ru.bestDates}</CardTitle>
         <p className="text-sm text-muted-foreground">
           {ru.bestDatesHint} · {ru.totalParticipants}: {totalParticipants}
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-0 flex-1 overflow-y-auto">
         {stats.length === 0 ? (
           <p className="text-sm text-muted-foreground">{ru.noAvailability}</p>
         ) : (

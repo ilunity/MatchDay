@@ -93,9 +93,9 @@ export function AvailabilityCalendar({
           {isEditing ? ru.availabilityHint : ru.availabilityViewHint}
         </p>
       </div>
-      <div className="w-full space-y-8">
-        <div className="w-full space-y-4">
-          <div className="w-full overflow-x-auto rounded-lg border bg-card p-2">
+      <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="w-full shrink-0 lg:w-auto">
+          <div className="flex w-fit max-w-full flex-col overflow-x-auto rounded-lg border bg-card p-2">
             <Calendar
               size="lg"
               mode="multiple"
@@ -108,43 +108,48 @@ export function AvailabilityCalendar({
               readOnly={!isEditing}
               disabled={disabled ? true : isDayDisabled}
               numberOfMonths={1}
-              className="mx-auto"
             />
-          </div>
-          {!disabled && (
-            <div className="flex flex-wrap gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    onClick={handleSave}
-                    disabled={pending || !hasChanges}
-                    className="w-full sm:w-auto"
-                  >
-                    {pending ? ru.loading : ru.saveAvailability}
-                  </Button>
+            {!disabled && (
+              <div className="mt-2 flex flex-wrap gap-2 border-t pt-2">
+                {isEditing ? (
+                  <>
+                    <Button
+                      onClick={handleSave}
+                      disabled={pending || !hasChanges}
+                      className="w-full sm:w-auto"
+                    >
+                      {pending ? ru.loading : ru.saveAvailability}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                      disabled={pending}
+                      className="w-full sm:w-auto"
+                    >
+                      {ru.cancelEdit}
+                    </Button>
+                  </>
+                ) : (
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={handleCancelEdit}
-                    disabled={pending}
+                    onClick={() => setIsEditing(true)}
                     className="w-full sm:w-auto"
                   >
-                    {ru.cancelEdit}
+                    {ru.markDates}
                   </Button>
-                </>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="w-full sm:w-auto"
-                >
-                  {ru.markDates}
-                </Button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        {statsAside && <div className="w-full">{statsAside}</div>}
+        {statsAside && (
+          <div className="relative min-w-0 flex-1 lg:self-stretch">
+            <div className="flex min-h-0 flex-col lg:absolute lg:inset-0 lg:overflow-hidden">
+              {statsAside}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
