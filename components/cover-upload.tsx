@@ -29,7 +29,7 @@ export function CoverUpload({
     formData.set("cover", file);
 
     try {
-      const res = await fetch(`/api/events/${eventId}/cover`, {
+      const res = await fetch(`/api/events/cover/${eventId}`, {
         method: "POST",
         body: formData,
       });
@@ -46,7 +46,7 @@ export function CoverUpload({
   async function handleRemove() {
     setUploading(true);
     try {
-      const res = await fetch(`/api/events/${eventId}/cover`, { method: "DELETE" });
+      const res = await fetch(`/api/events/cover/${eventId}`, { method: "DELETE" });
       if (res.ok) setCoverUrl(undefined);
     } finally {
       setUploading(false);
