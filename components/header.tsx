@@ -22,9 +22,6 @@ export async function Header() {
               >
                 {ru.dashboard}
               </Link>
-              <Link href="/events/new">
-                <Button size="sm">{ru.createEvent}</Button>
-              </Link>
               <UserBadge initialName={session.user.name} />
             </>
           ) : (
