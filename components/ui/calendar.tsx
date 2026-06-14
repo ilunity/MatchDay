@@ -311,7 +311,7 @@ function Calendar({
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
         month: cn("flex flex-col gap-4", defaultClassNames.month),
         month_caption: cn(
-          "flex justify-center pt-1 relative items-center",
+          "relative flex h-8! items-center justify-center",
           defaultClassNames.month_caption
         ),
         caption_label: cn("text-sm font-medium", defaultClassNames.caption_label),
@@ -320,7 +320,7 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative inline-flex min-h-8 items-center rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
+          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs has-focus:border-ring has-focus:ring-ring/50 has-focus:ring-[3px] data-[disabled=true]:cursor-not-allowed [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
@@ -328,20 +328,20 @@ function Calendar({
           defaultClassNames.dropdown
         ),
         months_dropdown: cn(
-          "min-h-8 cursor-pointer",
+          "h-8 cursor-pointer",
           defaultClassNames.months_dropdown
         ),
         years_dropdown: cn(
-          "min-h-8 cursor-pointer",
+          "h-8 cursor-pointer",
           defaultClassNames.years_dropdown
         ),
         nav: cn("flex items-center gap-1", defaultClassNames.nav),
         button_previous: cn(
-          "absolute left-1 z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
+          "absolute start-1 top-0 z-10 inline-flex h-8! w-8 items-center justify-center self-center rounded-md bg-transparent p-0 opacity-50 hover:opacity-100 cursor-pointer aria-disabled:cursor-not-allowed disabled:cursor-not-allowed",
           defaultClassNames.button_previous
         ),
         button_next: cn(
-          "absolute right-1 z-10 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 inline-flex items-center justify-center rounded-md",
+          "absolute end-1 top-0 z-10 inline-flex h-8! w-8 items-center justify-center self-center rounded-md bg-transparent p-0 opacity-50 hover:opacity-100 cursor-pointer aria-disabled:cursor-not-allowed disabled:cursor-not-allowed",
           defaultClassNames.button_next
         ),
         month_grid: cn(
