@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { dateKey } from "@/lib/dates";
+import { dateKey, getDefaultMonth } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 
@@ -134,7 +134,9 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               mode="multiple"
               selected={selectedDates}
               onSelect={(dates) => setSelectedDates(dates ?? [])}
-              possibleDates={selectedDates}
+              defaultMonth={getDefaultMonth(
+                selectedDates.length > 0 ? selectedDates : undefined
+              )}
               numberOfMonths={1}
               className="w-full"
             />

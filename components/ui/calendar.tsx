@@ -12,14 +12,23 @@ import { ru as ruLocale } from "react-day-picker/locale";
 import {
   dateKey,
   getCalendarMonthBounds,
+  getCalendarYearDropdownBounds,
   getDefaultMonth,
+  getEventPageYearDropdownOptions,
   getMonthsWithPossibleDates,
   getYearsWithPossibleDates,
+  isYearInCalendarDropdownRange,
   monthKey,
 } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -232,32 +241,132 @@ function createMonthNavButtons(monthsWithPossible: Set<string>) {
   return { PreviousMonthButton, NextMonthButton };
 }
 
-function createPossibleDatesDropdowns(
+function CalendarCaptionDropdown({
+  options,
+  value,
+  onChange,
+  className,
+  disabled,
+  scrollAnchorValue,
+  ...props
+}: DropdownProps & { scrollAnchorValue?: string | number }) {
+  const ariaLabel = props["aria-label"];
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const selected = options?.find(
+    (option) => String(option.value) === String(value)
+  );
+
+  function handleSelect(optionValue: string | number) {
+    onChange?.({
+      target: { value: String(optionValue) },
+    } as React.ChangeEvent<HTMLSelectElement>);
+  }
+
+  function handleOpenChange(open: boolean) {
+    if (!open || scrollAnchorValue === undefined) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      contentRef.current
+        ?.querySelector(`[data-option-value="${scrollAnchorValue}"]`)
+        ?.scrollIntoView({ block: "start" });
+    });
+  }
+
+  return (
+    <DropdownMenu onOpenChange={handleOpenChange}>
+      <DropdownMenuTrigger asChild disabled={disabled}>
+        <button
+          type="button"
+          className={cn(
+            "inline-flex h-8 min-w-0 max-w-full cursor-pointer items-center gap-1 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+            className
+          )}
+          aria-label={ariaLabel}
+        >
+          <span className="truncate">{selected?.label ?? value}</span>
+          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        ref={contentRef}
+        align="start"
+        className="max-h-60 overflow-y-auto p-1"
+      >
+        {options?.map((option) => (
+          <DropdownMenuItem
+            key={option.value}
+            data-option-value={option.value}
+            disabled={option.disabled}
+            className={cn(
+              String(option.value) === String(value) && "bg-accent font-medium"
+            )}
+            onSelect={() => handleSelect(option.value)}
+          >
+            {option.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function createCalendarDropdowns(
   monthsWithPossible: Set<string>,
-  yearsWithPossible: Set<number>
+  yearsWithPossible: Set<number>,
+  restrictToPossibleDates: boolean
 ) {
   function MonthsDropdown(props: DropdownProps) {
     const { components, months } = useDayPicker();
     const currentYear = months[0]?.date.getFullYear();
-    const options = props.options?.map((option) => ({
-      ...option,
-      disabled:
-        option.disabled ||
-        (currentYear !== undefined &&
-          !monthsWithPossible.has(`${currentYear}-${option.value}`)),
-    }));
+    const options =
+      restrictToPossibleDates && currentYear !== undefined
+        ? props.options?.map((option) => ({
+            ...option,
+            disabled:
+              option.disabled ||
+              !monthsWithPossible.has(`${currentYear}-${option.value}`),
+          }))
+        : props.options;
 
     return <components.Dropdown {...props} options={options} />;
   }
 
   function YearsDropdown(props: DropdownProps) {
-    const { components } = useDayPicker();
-    const options = props.options?.map((option) => ({
-      ...option,
-      disabled: option.disabled || !yearsWithPossible.has(option.value),
-    }));
+    const currentYear = new Date().getFullYear();
 
-    return <components.Dropdown {...props} options={options} />;
+    if (restrictToPossibleDates) {
+      const options = getEventPageYearDropdownOptions(
+        yearsWithPossible,
+        props.options
+      );
+      const selectedYear = Number(props.value);
+      const scrollAnchorValue = options.some(
+        (option) => option.value === selectedYear && !option.disabled
+      )
+        ? selectedYear
+        : (options.find((option) => !option.disabled)?.value ?? currentYear);
+
+      return (
+        <CalendarCaptionDropdown
+          {...props}
+          options={options}
+          scrollAnchorValue={scrollAnchorValue}
+        />
+      );
+    }
+
+    const options = props.options?.filter((option) =>
+      isYearInCalendarDropdownRange(Number(option.value))
+    );
+
+    return (
+      <CalendarCaptionDropdown
+        {...props}
+        options={options}
+        scrollAnchorValue={currentYear}
+      />
+    );
   }
 
   return { MonthsDropdown, YearsDropdown };
@@ -297,6 +406,8 @@ function createDayCell(dayBox: string) {
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   size?: CalendarSize;
   possibleDates?: Date[];
+  /** Limit month/year navigation to possibleDates (event page). Default: when possibleDates is set. */
+  restrictToPossibleDates?: boolean;
   bestDates?: string[];
   participantsByDate?: Record<string, string[]>;
   showParticipantTooltip?: boolean;
@@ -310,6 +421,7 @@ function Calendar({
   size = "lg",
   showOutsideDays = true,
   possibleDates,
+  restrictToPossibleDates = possibleDates !== undefined,
   bestDates = [],
   participantsByDate = {},
   showParticipantTooltip = false,
@@ -333,21 +445,31 @@ function Calendar({
     return new Set(dates.map(dateKey));
   }, [props.mode, props.mode === "multiple" ? props.selected : null]);
   const defaultMonth = defaultMonthProp ?? getDefaultMonth(possibleDates);
-  const { startMonth, endMonth } = getCalendarMonthBounds(possibleDates);
+  const monthBounds = restrictToPossibleDates
+    ? getCalendarMonthBounds(possibleDates)
+    : getCalendarYearDropdownBounds();
   const monthsWithPossible = React.useMemo(
-    () => getMonthsWithPossibleDates(possibleDates ?? []),
-    [possibleDates]
+    () =>
+      restrictToPossibleDates
+        ? getMonthsWithPossibleDates(possibleDates ?? [])
+        : new Set<string>(),
+    [restrictToPossibleDates, possibleDates]
   );
   const yearsWithPossible = React.useMemo(
-    () => getYearsWithPossibleDates(possibleDates ?? []),
-    [possibleDates]
-  );
-  const possibleDatesDropdowns = React.useMemo(
     () =>
-      possibleDates !== undefined
-        ? createPossibleDatesDropdowns(monthsWithPossible, yearsWithPossible)
-        : null,
-    [possibleDates, monthsWithPossible, yearsWithPossible]
+      restrictToPossibleDates
+        ? getYearsWithPossibleDates(possibleDates ?? [])
+        : new Set<number>(),
+    [restrictToPossibleDates, possibleDates]
+  );
+  const calendarDropdowns = React.useMemo(
+    () =>
+      createCalendarDropdowns(
+        monthsWithPossible,
+        yearsWithPossible,
+        restrictToPossibleDates
+      ),
+    [monthsWithPossible, yearsWithPossible, restrictToPossibleDates]
   );
   const DayButton = React.useMemo(
     () =>
@@ -369,8 +491,11 @@ function Calendar({
     ]
   );
   const navButtons = React.useMemo(
-    () => createMonthNavButtons(monthsWithPossible),
-    [monthsWithPossible]
+    () =>
+      restrictToPossibleDates
+        ? createMonthNavButtons(monthsWithPossible)
+        : {},
+    [restrictToPossibleDates, monthsWithPossible]
   );
   const Day = React.useMemo(() => createDayCell(dayBox), [dayBox]);
 
@@ -381,8 +506,8 @@ function Calendar({
       captionLayout="dropdown"
       navLayout="around"
       defaultMonth={defaultMonth}
-      startMonth={startMonth}
-      endMonth={endMonth}
+      startMonth={monthBounds.startMonth}
+      endMonth={monthBounds.endMonth}
       className={cn(
         "rounded-md border border-border bg-background p-3",
         size === "lg" && "calendar-fluid",
@@ -402,7 +527,7 @@ function Calendar({
           defaultClassNames.month_caption
         ),
         caption_label: cn(
-          "pointer-events-none select-none text-sm font-medium !outline-none",
+          "sr-only",
           defaultClassNames.caption_label
         ),
         dropdowns: cn(
@@ -410,13 +535,10 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative inline-flex h-8 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 data-[disabled=true]:cursor-not-allowed [&>span]:inline-flex [&>span]:items-center [&>span]:gap-1",
+          "relative inline-flex",
           defaultClassNames.dropdown_root
         ),
-        dropdown: cn(
-          "absolute inset-0 cursor-pointer opacity-0 outline-none focus:outline-none focus-visible:outline-none",
-          defaultClassNames.dropdown
-        ),
+        dropdown: cn("inline-flex", defaultClassNames.dropdown),
         months_dropdown: cn(
           "h-8 cursor-pointer",
           defaultClassNames.months_dropdown
@@ -468,15 +590,18 @@ function Calendar({
           ) : (
             <ChevronRight className="h-4 w-4" />
           ),
+        Dropdown: CalendarCaptionDropdown,
         DayButton,
         Day,
         Weekday,
         ...navButtons,
-        ...possibleDatesDropdowns,
+        ...calendarDropdowns,
         ...components,
       }}
       modifiers={{
-        possible: possibleDates ?? [],
+        ...(restrictToPossibleDates
+          ? { possible: possibleDates ?? [] }
+          : {}),
         best: (date) => bestSet.has(dateKey(date)),
         ...modifiers,
       }}

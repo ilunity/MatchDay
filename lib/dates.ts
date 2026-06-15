@@ -52,6 +52,59 @@ export function getYearsWithPossibleDates(possibleDates: Date[]): Set<number> {
   return new Set(possibleDates.map((date) => date.getFullYear()));
 }
 
+export const CALENDAR_YEAR_FORWARD_RANGE = 100;
+
+export function getCalendarYearDropdownBounds(): {
+  startMonth: Date;
+  endMonth: Date;
+} {
+  const currentYear = new Date().getFullYear();
+  return {
+    startMonth: new Date(currentYear, 0, 1),
+    endMonth: new Date(currentYear + CALENDAR_YEAR_FORWARD_RANGE, 11, 1),
+  };
+}
+
+export function isYearInCalendarDropdownRange(year: number): boolean {
+  const currentYear = new Date().getFullYear();
+  return (
+    year >= currentYear && year <= currentYear + CALENDAR_YEAR_FORWARD_RANGE
+  );
+}
+
+export function getEventPageYearDropdownOptions(
+  yearsWithPossible: Set<number>,
+  sourceOptions?: ReadonlyArray<{
+    value: number | string;
+    label: unknown;
+    disabled?: boolean;
+  }>
+): Array<{ value: number; label: string; disabled: boolean }> {
+  if (yearsWithPossible.size === 0) {
+    return [];
+  }
+
+  const sortedYears = Array.from(yearsWithPossible).sort((a, b) => a - b);
+  const minYear = sortedYears[0]!;
+  const maxYear = sortedYears[sortedYears.length - 1]!;
+  const labelByValue = new Map(
+    sourceOptions?.map((option) => [Number(option.value), String(option.label)]) ??
+      []
+  );
+
+  const options: Array<{ value: number; label: string; disabled: boolean }> =
+    [];
+  for (let year = minYear; year <= maxYear; year++) {
+    options.push({
+      value: year,
+      label: labelByValue.get(year) ?? String(year),
+      disabled: !yearsWithPossible.has(year),
+    });
+  }
+
+  return options;
+}
+
 export function getCalendarMonthBounds(possibleDates?: Date[]): {
   startMonth: Date;
   endMonth: Date;
