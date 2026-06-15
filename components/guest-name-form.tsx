@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { setGuestName } from "@/actions/availability";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ru } from "@/lib/i18n/ru";
+import { cn } from "@/lib/utils";
 
 export function GuestNameForm({
   eventSlug,
@@ -46,7 +48,11 @@ export function GuestNameForm({
   return (
     <Dialog open={open}>
       <DialogContent
-        className="sm:max-w-md"
+        hideCloseButton
+        className={cn(
+          "w-[calc(100%-2rem)] max-w-md rounded-lg",
+          "sm:w-full"
+        )}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
@@ -67,9 +73,14 @@ export function GuestNameForm({
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? ru.loading : ru.continue}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button type="submit" className="w-full" disabled={pending}>
+              {pending ? ru.loading : ru.continue}
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/">{ru.backHome}</Link>
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
