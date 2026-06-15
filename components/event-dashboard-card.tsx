@@ -13,6 +13,7 @@ type EventDashboardCardProps = {
   createdAt: Date;
   possibleDatesCount: number;
   requireAuth: boolean;
+  isOwner?: boolean;
 };
 
 export function EventDashboardCard({
@@ -21,6 +22,7 @@ export function EventDashboardCard({
   createdAt,
   possibleDatesCount,
   requireAuth,
+  isOwner = true,
 }: EventDashboardCardProps) {
   const router = useRouter();
 
@@ -37,18 +39,25 @@ export function EventDashboardCard({
       }}
       className="relative cursor-pointer transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Link
-        href={`/events/${slug}/edit`}
-        aria-label={ru.edit}
-        onClick={(e) => e.stopPropagation()}
-        className="absolute right-1 top-1 z-10 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:right-2 sm:top-2"
-      >
-        <Pencil className="h-4 w-4" />
-      </Link>
+      {isOwner && (
+        <Link
+          href={`/events/${slug}/edit`}
+          aria-label={ru.edit}
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-1 top-1 z-10 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground sm:right-2 sm:top-2"
+        >
+          <Pencil className="h-4 w-4" />
+        </Link>
+      )}
 
-      <CardHeader className="pr-12">
+      <CardHeader className={isOwner ? "pr-12" : undefined}>
         <CardTitle className="line-clamp-2 text-lg">{title}</CardTitle>
         <p className="text-xs text-muted-foreground">
+          {!isOwner && (
+            <span className="mr-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+              {ru.eventRoleParticipant}
+            </span>
+          )}
           {ru.createdAt}: {formatDateShortRu(createdAt)}
         </p>
       </CardHeader>

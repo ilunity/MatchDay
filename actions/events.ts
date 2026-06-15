@@ -130,16 +130,69 @@ export async function getEventForOwner(slug: string) {
   return event;
 }
 
-export async function getUserEvents() {
+export type DashboardEventFilter = "all" | "owned" | "participated";
+
+export type DashboardEvent = IEvent & {
+  role: "owner" | "participant";
+};
+
+function sortEventsByCreatedAtDesc(events: DashboardEvent[]): DashboardEvent[] {
+  return [...events].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function getDashboardEvents(
+  filter: DashboardEventFilter = "all"
+): Promise<DashboardEvent[]> {
   const session = await auth();
   if (!session?.user?.id) {
     return [];
   }
 
   await connectDB();
-  return Event.find({ ownerId: session.user.id })
+  const userId = session.user.id;
+
+  const ownedEvents = await Event.find({ ownerId: userId })
     .sort({ createdAt: -1 })
     .lean<IEvent[]>();
+  const ownedIds = new Set(ownedEvents.map((event) => event._id.toString()));
+
+  const { Availability } = await import("@/models/Availability");
+  const availabilities = await Availability.find({ userId }).lean();
+  const participatedEventIds = [
+    ...new Set(
+      availabilities
+        .map((availability) => availability.eventId.toString())
+        .filter((eventId) => !ownedIds.has(eventId))
+    ),
+  ];
+
+  const participatedEvents =
+    participatedEventIds.length > 0
+      ? await Event.find({ _id: { $in: participatedEventIds } })
+          .sort({ createdAt: -1 })
+          .lean<IEvent[]>()
+      : [];
+
+  const owned: DashboardEvent[] = ownedEvents.map((event) => ({
+    ...event,
+    role: "owner",
+  }));
+  const participated: DashboardEvent[] = participatedEvents.map((event) => ({
+    ...event,
+    role: "participant",
+  }));
+
+  if (filter === "owned") return owned;
+  if (filter === "participated") return participated;
+
+  return sortEventsByCreatedAtDesc([...owned, ...participated]);
+}
+
+/** @deprecated Use getDashboardEvents instead */
+export async function getUserEvents() {
+  return getDashboardEvents("owned");
 }
 
 export async function getEventBySlug(slug: string) {

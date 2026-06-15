@@ -112,6 +112,9 @@ export async function setAvailability(
   }
 
   revalidatePath(`/e/${eventSlug}`);
+  if (session?.user?.id) {
+    revalidatePath("/dashboard");
+  }
   return { success: true };
 }
 
