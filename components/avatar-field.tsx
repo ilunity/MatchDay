@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Crop, ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarCropDialog } from "@/components/avatar-crop-dialog";
 import { Button } from "@/components/ui/button";
@@ -155,6 +156,7 @@ export function AvatarField({
             className="w-full sm:w-auto"
             onClick={() => inputRef.current?.click()}
           >
+            <ImagePlus className="h-4 w-4" />
             {showUploadedPreview ? ru.changeAvatar : ru.uploadAvatar}
           </Button>
           {showUploadedPreview && (
@@ -166,6 +168,7 @@ export function AvatarField({
                 className="w-full sm:w-auto"
                 onClick={handleReposition}
               >
+                <Crop className="h-4 w-4" />
                 {ru.adjustAvatar}
               </Button>
               <Button
@@ -175,6 +178,7 @@ export function AvatarField({
                 className="w-full sm:w-auto"
                 onClick={handleRemove}
               >
+                <Trash2 className="h-4 w-4" />
                 {ru.removeAvatar}
               </Button>
             </>

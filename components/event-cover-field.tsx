@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { Crop, ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { CoverCropDialog } from "@/components/cover-crop-dialog";
 import { Button } from "@/components/ui/button";
@@ -200,6 +201,7 @@ export function EventCoverField({
           size="sm"
           onClick={() => inputRef.current?.click()}
         >
+          <ImagePlus className="h-4 w-4" />
           {showPreview ? ru.changeCover : ru.uploadCover}
         </Button>
         {showPreview && (
@@ -210,9 +212,11 @@ export function EventCoverField({
               size="sm"
               onClick={handleReposition}
             >
+              <Crop className="h-4 w-4" />
               {ru.adjustCover}
             </Button>
             <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
+              <Trash2 className="h-4 w-4" />
               {ru.removeCover}
             </Button>
           </>
