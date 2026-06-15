@@ -34,7 +34,7 @@ export const ru = {
   shareLink: "Ссылка для участников",
   copyLink: "Копировать",
   copied: "Скопировано!",
-  yourAvailability: "Ваша доступность",
+  yourAvailability: "Удобные для вас даты",
   availabilityHint: "Отметьте дни, когда вы можете",
   availabilityViewHint: "Наведите на день, чтобы увидеть, кто может",
   markDates: "Отметить даты",
