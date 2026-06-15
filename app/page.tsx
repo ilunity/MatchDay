@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { CalendarPlus, LayoutDashboard } from "lucide-react";
+import { BarChart3, CalendarPlus, LayoutDashboard, Link2 } from "lucide-react";
+import { FeatureCard } from "@/components/feature-card";
 import { auth } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function HomePage() {
   const session = await auth();
@@ -50,30 +50,24 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{ru.features.create}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{ru.features.createDesc}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{ru.features.share}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{ru.features.shareDesc}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{ru.features.results}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{ru.features.resultsDesc}</p>
-          </CardContent>
-        </Card>
+        <FeatureCard
+          variant="create"
+          icon={CalendarPlus}
+          title={ru.features.create}
+          description={ru.features.createDesc}
+        />
+        <FeatureCard
+          variant="share"
+          icon={Link2}
+          title={ru.features.share}
+          description={ru.features.shareDesc}
+        />
+        <FeatureCard
+          variant="results"
+          icon={BarChart3}
+          title={ru.features.results}
+          description={ru.features.resultsDesc}
+        />
       </section>
     </div>
   );
