@@ -321,6 +321,75 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     </div>
   );
 
+  const calendarActionControls = (
+    <>
+      {mode === "edit" && isEditingDates ? (
+        <div className="order-2 grid w-full grid-cols-2 gap-2 lg:order-none lg:flex lg:w-auto lg:gap-2">
+          <Button
+            type="button"
+            onClick={handleSaveDatesEdit}
+            disabled={!hasDateChanges}
+            className="w-full lg:w-auto"
+          >
+            {ru.save}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCancelDatesEdit}
+            className="w-full lg:w-auto"
+          >
+            {ru.cancelEdit}
+          </Button>
+        </div>
+      ) : null}
+      <div
+        className={cn(
+          "order-1 flex w-full flex-wrap items-center gap-2",
+          "lg:order-none lg:w-auto lg:flex-nowrap",
+          mode === "edit" && !isEditingDates && "justify-center"
+        )}
+      >
+        {mode === "create" || isEditingDates ? (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResetAllDates}
+              className="w-full lg:w-auto"
+            >
+              {ru.resetAllDates}
+            </Button>
+            {undoRedoButtons}
+          </>
+        ) : (
+          <Button
+            type="button"
+            onClick={handleStartEditingDates}
+            className="w-full lg:w-auto"
+          >
+            {selectedDates.length === 0
+              ? ru.selectPossibleDates
+              : ru.changePossibleDates}
+          </Button>
+        )}
+      </div>
+    </>
+  );
+
+  const calendarActionBarClassName = cn(
+    "mt-2 flex w-full flex-col gap-2 border-t pt-2",
+    "lg:flex-row lg:items-center lg:gap-2 lg:w-full",
+    mode === "edit" && !isEditingDates
+      ? "lg:justify-center"
+      : mode === "edit" && isEditingDates
+        ? "lg:justify-between"
+        : "lg:justify-end"
+  );
+
+  const showCalendarActionBar =
+    (mode === "create" && selectedDates.length > 0) || mode === "edit";
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -415,7 +484,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             className={cn(
               "flex w-full flex-col gap-4",
               showDatePresets
-                ? "lg:min-h-0 lg:flex-row lg:flex-wrap lg:items-stretch"
+                ? "lg:min-h-0 lg:flex-row lg:items-stretch"
                 : "lg:items-center"
             )}
           >
@@ -487,73 +556,22 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 </div>
               </>
             )}
-            {(mode === "create" && selectedDates.length > 0) ||
-            mode === "edit" ? (
+            {showCalendarActionBar ? (
               <div
                 className={cn(
-                  "max-lg:order-2 mt-2 flex w-full flex-col gap-2 border-t pt-2",
-                  "lg:basis-full lg:flex-row lg:items-center lg:gap-2 lg:w-full",
-                  mode === "edit" && !isEditingDates
-                    ? "lg:justify-center"
-                    : mode === "edit" && isEditingDates
-                      ? "lg:justify-between"
-                      : "lg:justify-end"
+                  calendarActionBarClassName,
+                  "max-lg:order-2 lg:hidden"
                 )}
               >
-                {mode === "edit" && isEditingDates ? (
-                  <div className="order-2 grid w-full grid-cols-2 gap-2 lg:order-none lg:flex lg:w-auto lg:gap-2">
-                    <Button
-                      type="button"
-                      onClick={handleSaveDatesEdit}
-                      disabled={!hasDateChanges}
-                      className="w-full lg:w-auto"
-                    >
-                      {ru.save}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCancelDatesEdit}
-                      className="w-full lg:w-auto"
-                    >
-                      {ru.cancelEdit}
-                    </Button>
-                  </div>
-                ) : null}
-                <div
-                  className={cn(
-                    "order-1 flex w-full flex-wrap items-center gap-2",
-                    "lg:order-none lg:w-auto lg:flex-nowrap",
-                    mode === "edit" && !isEditingDates && "justify-center"
-                  )}
-                >
-                  {mode === "create" || isEditingDates ? (
-                    <>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleResetAllDates}
-                        className="w-full lg:w-auto"
-                      >
-                        {ru.resetAllDates}
-                      </Button>
-                      {undoRedoButtons}
-                    </>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={handleStartEditingDates}
-                      className="w-full lg:w-auto"
-                    >
-                      {selectedDates.length === 0
-                        ? ru.selectPossibleDates
-                        : ru.changePossibleDates}
-                    </Button>
-                  )}
-                </div>
+                {calendarActionControls}
               </div>
             ) : null}
           </div>
+          {showCalendarActionBar ? (
+            <div className={cn(calendarActionBarClassName, "hidden lg:flex")}>
+              {calendarActionControls}
+            </div>
+          ) : null}
         </div>
         {selectedDates.length === 0 && (
           <p className="text-sm text-destructive">{ru.selectAtLeastOneDate}</p>
