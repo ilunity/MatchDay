@@ -264,6 +264,45 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [datesEditable]);
 
+  const undoRedoToolbar = (
+    <TooltipProvider delayDuration={300}>
+      <div className="flex shrink-0 justify-end gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={handleUndo}
+              disabled={!canUndo}
+              aria-label={ru.datePresets.undo}
+            >
+              <Undo2 className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{ru.datePresets.undo}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={handleRedo}
+              disabled={!canRedo}
+              aria-label={ru.datePresets.redo}
+            >
+              <Redo2 className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{ru.datePresets.redo}</TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -374,7 +413,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             </div>
             {datesEditable && (
               <>
-                <div className="w-full border-t pt-2 lg:hidden">
+                <div className="flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
+                  {undoRedoToolbar}
                   <Accordion type="single" collapsible>
                     <AccordionItem value="presets" className="border-none">
                       <AccordionTrigger className="py-2 hover:no-underline">
@@ -382,103 +422,25 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="flex flex-col gap-2">
-                          <div className="flex justify-end">
-                            <TooltipProvider delayDuration={300}>
-                              <div className="flex shrink-0 gap-1">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="icon"
-                                      className="size-8"
-                                      onClick={handleUndo}
-                                      disabled={!canUndo}
-                                      aria-label={ru.datePresets.undo}
-                                    >
-                                      <Undo2 className="size-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>{ru.datePresets.undo}</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="icon"
-                                      className="size-8"
-                                      onClick={handleRedo}
-                                      disabled={!canRedo}
-                                      aria-label={ru.datePresets.redo}
-                                    >
-                                      <Redo2 className="size-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>{ru.datePresets.redo}</TooltipContent>
-                                </Tooltip>
-                              </div>
-                            </TooltipProvider>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {DATE_PRESET_IDS.map((presetId) => (
-                              <Button
-                                key={presetId}
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="w-full"
-                                onClick={() => handleApplyPreset(presetId)}
-                              >
-                                {DATE_PRESET_LABELS[presetId]}
-                              </Button>
-                            ))}
-                          </div>
+                          {DATE_PRESET_IDS.map((presetId) => (
+                            <Button
+                              key={presetId}
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => handleApplyPreset(presetId)}
+                            >
+                              {DATE_PRESET_LABELS[presetId]}
+                            </Button>
+                          ))}
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
                 </div>
                 <div className="hidden min-w-0 flex-1 flex-col gap-2 self-stretch border-l pl-4 lg:flex lg:min-h-0 lg:w-full">
-                  <div className="flex shrink-0 items-center justify-between gap-2">
-                    <Label>{ru.datePresets.sectionLabel}</Label>
-                    <TooltipProvider delayDuration={300}>
-                      <div className="flex shrink-0 gap-1">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="size-8"
-                              onClick={handleUndo}
-                              disabled={!canUndo}
-                              aria-label={ru.datePresets.undo}
-                            >
-                              <Undo2 className="size-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{ru.datePresets.undo}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="size-8"
-                              onClick={handleRedo}
-                              disabled={!canRedo}
-                              aria-label={ru.datePresets.redo}
-                            >
-                              <Redo2 className="size-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{ru.datePresets.redo}</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TooltipProvider>
-                  </div>
+                  <Label className="shrink-0">{ru.datePresets.sectionLabel}</Label>
                   <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
                     {DATE_PRESET_IDS.map((presetId) => (
                       <Button
@@ -493,6 +455,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                       </Button>
                     ))}
                   </div>
+                  <div className="shrink-0">{undoRedoToolbar}</div>
                 </div>
               </>
             )}
