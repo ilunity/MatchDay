@@ -9,6 +9,7 @@ import {
   logMagicLinkToConsole,
   sendMagicLinkEmail,
 } from "@/lib/email";
+import { buildMagicLinkVerifyUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
 import { User } from "@/models/User";
 
@@ -52,13 +53,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: emailFrom,
       sendVerificationRequest({ identifier, url, provider }) {
         const from = provider.from ?? emailFrom;
+        const verifyUrl = buildMagicLinkVerifyUrl(url);
 
         if (consoleEmail) {
-          logMagicLinkToConsole({ to: identifier, url, from });
+          logMagicLinkToConsole({ to: identifier, url: verifyUrl, from });
           return;
         }
 
-        return sendMagicLinkEmail({ to: identifier, url, from });
+        return sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
       },
     }),
   ],

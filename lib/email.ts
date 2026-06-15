@@ -60,19 +60,23 @@ function buildMagicLinkEmailHtml(url: string): string {
       <td align="center" style="padding:40px 16px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background-color:#ffffff;border:1px solid #e4e4e7;border-radius:12px;">
           <tr>
-            <td style="padding:32px 28px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a0a0a;">
+            <td align="center" style="padding:32px 28px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a0a0a;text-align:center;">
               <p style="margin:0 0 8px;font-size:20px;font-weight:700;line-height:1.3;">${ru.appName}</p>
               <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#71717a;">${ru.magicLinkEmailIntro}</p>
-              <table role="presentation" cellspacing="0" cellpadding="0">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td align="center" style="border-radius:8px;background-color:#2563eb;background-image:${buttonGradient};">
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 28px;font-size:15px;font-weight:600;line-height:1.2;color:#fafafa;text-decoration:none;border-radius:8px;">${ru.magicLinkEmailButton}</a>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" style="border-radius:8px;background-color:#2563eb;background-image:${buttonGradient};">
+                          <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 28px;font-size:15px;font-weight:600;line-height:1.2;color:#fafafa;text-decoration:none;border-radius:8px;">${ru.magicLinkEmailButton}</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
-              <p style="margin:24px 0 8px;font-size:13px;line-height:1.5;color:#71717a;">${ru.magicLinkEmailExpire}</p>
-              <p style="margin:0 0 6px;font-size:12px;line-height:1.5;color:#a1a1aa;">${ru.magicLinkEmailFallback}</p>
-              <p style="margin:0;font-size:12px;line-height:1.5;word-break:break-all;"><a href="${url}" style="color:#2563eb;text-decoration:underline;">${url}</a></p>
+              <p style="margin:24px 0 0;font-size:13px;line-height:1.5;color:#71717a;">${ru.magicLinkEmailExpire}</p>
             </td>
           </tr>
         </table>
