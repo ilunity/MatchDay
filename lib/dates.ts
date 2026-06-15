@@ -33,6 +33,52 @@ export function formatDateShortRu(date: Date): string {
   }).format(date);
 }
 
+export function formatDateDotRu(date: Date): string {
+  const d = normalizeDate(date);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const year = d.getUTCFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+export function formatMonthYearRu(date: Date): string {
+  const d = normalizeDate(date);
+  const month = new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+    timeZone: "UTC",
+  }).format(d);
+  return `${month} ${d.getUTCFullYear()}`;
+}
+
+export function formatWeekRangeRu(start: Date, end: Date): string {
+  const startNorm = normalizeDate(start);
+  const endNorm = normalizeDate(end);
+  const startDay = startNorm.getUTCDate();
+  const endDay = endNorm.getUTCDate();
+
+  if (startNorm.getUTCMonth() === endNorm.getUTCMonth()) {
+    const month = new Intl.DateTimeFormat("ru-RU", {
+      month: "long",
+      timeZone: "UTC",
+    }).format(startNorm);
+    return `${startDay}–${endDay} ${month}`;
+  }
+
+  const startMonth = new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+    timeZone: "UTC",
+  }).format(startNorm);
+  const endMonth = new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+    timeZone: "UTC",
+  }).format(endNorm);
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+}
+
+export function getToday(): Date {
+  return normalizeDate(new Date());
+}
+
 export function monthKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}`;
 }

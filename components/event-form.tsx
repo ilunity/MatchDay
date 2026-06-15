@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+  useTransition,
+} from "react";
+import { Undo2, Redo2 } from "lucide-react";
 import { createEvent, updateEvent } from "@/actions/events";
 import { EventCoverField } from "@/components/event-cover-field";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,8 +18,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { dateKey, getDefaultMonth, normalizeDates } from "@/lib/dates";
+import {
+  DATE_PRESET_IDS,
+  computePresetDates,
+  mergeDates,
+  type DatePresetId,
+} from "@/lib/date-presets";
+import {
+  dateKey,
+  formatDateDotRu,
+  formatMonthYearRu,
+  formatWeekRangeRu,
+  getDefaultMonth,
+  getToday,
+  normalizeDates,
+} from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +49,65 @@ function dateSetsEqual(a: Date[], b: Date[]): boolean {
     return false;
   }
   return b.every((date) => keysA.has(dateKey(date)));
+}
+
+type DateHistoryState = {
+  past: Date[][];
+  present: Date[];
+  future: Date[][];
+};
+
+type DateHistoryAction =
+  | { type: "SET"; dates: Date[] }
+  | { type: "UNDO" }
+  | { type: "REDO" }
+  | { type: "RESET"; dates: Date[] };
+
+function dateHistoryReducer(
+  state: DateHistoryState,
+  action: DateHistoryAction
+): DateHistoryState {
+  switch (action.type) {
+    case "SET": {
+      const dates = normalizeDates(action.dates);
+      if (dateSetsEqual(state.present, dates)) {
+        return state;
+      }
+      return {
+        past: [...state.past, state.present],
+        present: dates,
+        future: [],
+      };
+    }
+    case "UNDO": {
+      if (state.past.length === 0) {
+        return state;
+      }
+      const previous = state.past[state.past.length - 1]!;
+      return {
+        past: state.past.slice(0, -1),
+        present: previous,
+        future: [state.present, ...state.future],
+      };
+    }
+    case "REDO": {
+      if (state.future.length === 0) {
+        return state;
+      }
+      const next = state.future[0]!;
+      return {
+        past: [...state.past, state.present],
+        present: next,
+        future: state.future.slice(1),
+      };
+    }
+    case "RESET":
+      return {
+        past: [],
+        present: normalizeDates(action.dates),
+        future: [],
+      };
+  }
 }
 
 type EventFormInitial = {
@@ -38,6 +125,46 @@ type EventFormProps =
   | { mode?: "create" }
   | { mode: "edit"; initial: EventFormInitial; currentUserName?: string };
 
+function getPresetLabel(
+  presetId: DatePresetId,
+  visibleMonth: Date,
+  today: Date
+): string {
+  const monthYear = formatMonthYearRu(visibleMonth);
+  const fromDate = formatDateDotRu(today);
+
+  switch (presetId) {
+    case "allWeekendsOfMonth":
+      return ru.datePresets.allWeekendsOfMonth(monthYear);
+    case "allWeekdaysOfMonth":
+      return ru.datePresets.allWeekdaysOfMonth(monthYear);
+    case "allDaysOfMonth":
+      return ru.datePresets.allDaysOfMonth(monthYear);
+    case "next2Weeks":
+      return ru.datePresets.next2Weeks(fromDate);
+    case "next4Weeks":
+      return ru.datePresets.next4Weeks(fromDate);
+    case "next3Weekends":
+      return ru.datePresets.next3Weekends(fromDate);
+    case "thisWeek":
+      return ru.datePresets.thisWeek(fromDate);
+    case "nextWeek": {
+      const weekDates = computePresetDates("nextWeek", {
+        visibleMonth,
+        today,
+      });
+      if (weekDates.length === 0) {
+        return ru.datePresets.nextWeek(fromDate);
+      }
+      const range = formatWeekRangeRu(
+        weekDates[0]!,
+        weekDates[weekDates.length - 1]!
+      );
+      return ru.datePresets.nextWeek(range);
+    }
+  }
+}
+
 export function EventForm(props: EventFormProps = { mode: "create" }) {
   const isEdit = props.mode === "edit";
   const initial = isEdit ? props.initial : undefined;
@@ -48,24 +175,79 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     () => normalizeDates(initial?.possibleDates ?? []),
     [initial?.possibleDates]
   );
-  const [selectedDates, setSelectedDates] = useState<Date[]>(savedDates);
+  const [dateHistory, dispatchDateHistory] = useReducer(dateHistoryReducer, {
+    past: [],
+    present: savedDates,
+    future: [],
+  });
+  const selectedDates = dateHistory.present;
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isLgUp = useMediaQuery("(min-width: 600px)");
   const calendarSize = isLgUp ? "lg" : "sm";
+  const [calendarMonth, setCalendarMonth] = useState(() =>
+    getDefaultMonth(savedDates.length > 0 ? savedDates : undefined)
+  );
+
+  const today = useMemo(() => getToday(), []);
+  const datesEditable = mode === "create" || isEditingDates;
+  const canUndo = dateHistory.past.length > 0;
+  const canRedo = dateHistory.future.length > 0;
 
   const hasDateChanges = useMemo(
     () => !dateSetsEqual(selectedDates, savedDates),
     [selectedDates, savedDates]
   );
 
+  const presetLabels = useMemo(
+    () =>
+      DATE_PRESET_IDS.map((presetId) => ({
+        id: presetId,
+        label: getPresetLabel(presetId, calendarMonth, today),
+      })),
+    [calendarMonth, today]
+  );
+
+  const setSelectedDates = useCallback((dates: Date[]) => {
+    dispatchDateHistory({ type: "SET", dates });
+  }, []);
+
+  const resetDateHistory = useCallback((dates: Date[]) => {
+    dispatchDateHistory({ type: "RESET", dates });
+  }, []);
+
   function handleSelectDates(dates: Date[] | undefined) {
-    if (mode === "edit" && !isEditingDates) {
+    if (!datesEditable) {
       return;
     }
     setSelectedDates(dates ?? []);
+  }
+
+  function handleApplyPreset(presetId: DatePresetId) {
+    if (!datesEditable) {
+      return;
+    }
+    const presetDates = computePresetDates(presetId, {
+      visibleMonth: calendarMonth,
+      today,
+    });
+    setSelectedDates(mergeDates(selectedDates, presetDates));
+  }
+
+  function handleUndo() {
+    if (!datesEditable) {
+      return;
+    }
+    dispatchDateHistory({ type: "UNDO" });
+  }
+
+  function handleRedo() {
+    if (!datesEditable) {
+      return;
+    }
+    dispatchDateHistory({ type: "REDO" });
   }
 
   function handleSaveDatesEdit() {
@@ -73,17 +255,49 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }
 
   function handleCancelDatesEdit() {
-    setSelectedDates(savedDates);
+    resetDateHistory(savedDates);
     setIsEditingDates(false);
   }
 
   function handleResetDatesEdit() {
-    setSelectedDates(savedDates);
+    resetDateHistory(savedDates);
   }
 
   function handleResetDatesCreate() {
-    setSelectedDates([]);
+    resetDateHistory([]);
   }
+
+  function handleStartEditingDates() {
+    resetDateHistory(savedDates);
+    setIsEditingDates(true);
+  }
+
+  useEffect(() => {
+    if (!datesEditable) {
+      return;
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      const mod = event.metaKey || event.ctrlKey;
+      if (!mod) {
+        return;
+      }
+
+      if (event.key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        dispatchDateHistory({ type: "UNDO" });
+        return;
+      }
+
+      if (event.key === "y" || (event.key === "z" && event.shiftKey)) {
+        event.preventDefault();
+        dispatchDateHistory({ type: "REDO" });
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [datesEditable]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -181,10 +395,9 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               mode="multiple"
               selected={selectedDates}
               onSelect={handleSelectDates}
-              defaultMonth={getDefaultMonth(
-                selectedDates.length > 0 ? selectedDates : undefined
-              )}
-              readOnly={mode === "edit" && !isEditingDates}
+              month={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              readOnly={!datesEditable}
               participantsByDate={initial?.participantsByDate}
               bestDates={initial?.bestDates}
               currentUserName={currentUserName}
@@ -193,6 +406,65 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               className="w-full"
             />
           </div>
+          {datesEditable && (
+            <div className="mt-2 w-full space-y-2 border-t pt-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium">
+                  {ru.datePresets.sectionLabel}
+                </span>
+                <TooltipProvider delayDuration={300}>
+                  <div className="flex shrink-0 gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="size-8"
+                          onClick={handleUndo}
+                          disabled={!canUndo}
+                          aria-label={ru.datePresets.undo}
+                        >
+                          <Undo2 className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{ru.datePresets.undo}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="size-8"
+                          onClick={handleRedo}
+                          disabled={!canRedo}
+                          aria-label={ru.datePresets.redo}
+                        >
+                          <Redo2 className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{ru.datePresets.redo}</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
+              </div>
+              <div className="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible">
+                {presetLabels.map(({ id, label }) => (
+                  <Button
+                    key={id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => handleApplyPreset(id)}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
           {(mode === "create" && selectedDates.length > 0) ||
           mode === "edit" ? (
             <div className="mt-2 flex w-full flex-wrap gap-2 border-t pt-2">
@@ -235,7 +507,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               ) : (
                 <Button
                   type="button"
-                  onClick={() => setIsEditingDates(true)}
+                  onClick={handleStartEditingDates}
                   className="w-full sm:w-auto"
                 >
                   {selectedDates.length === 0
