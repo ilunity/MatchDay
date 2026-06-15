@@ -1,13 +1,45 @@
 @import "tailwindcss";
 @import "react-day-picker/style.css";
 
+/* react-day-picker defaults (42px buttons) load with the import above — override after it. */
+.rdp-root:not(.calendar-fluid) {
+  --rdp-day_button-width: 42px;
+  --rdp-day_button-height: 42px;
+}
+
+.rdp-day_button {
+  border: none !important;
+}
+
+.rdp-root:not(.calendar-fluid) .rdp-day_button {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px;
+  min-height: 42px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.calendar-fluid.rdp-root {
+  --rdp-day_button-width: 50px;
+  --rdp-day_button-height: 50px;
+}
+
+.calendar-fluid .rdp-day_button {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px;
+  min-height: 50px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
 /* Single focus ring on dropdown_root; suppress inner label outline from rdp styles */
 .rdp-dropdown:focus-visible ~ .rdp-caption_label {
   outline: none !important;
 }
 
-/* Unify weekday header and day cell horizontal alignment.
-   Mobile uses full-width grid; desktop sizes use fixed widths via Tailwind. */
+/* Full-width grid on mobile; sm desktop uses fixed 42px rows via --rdp-day-height. */
 .rdp-month_grid {
   table-layout: fixed;
   border-collapse: collapse;
@@ -26,14 +58,43 @@
 
 .rdp-day {
   text-align: center !important;
-  height: var(--rdp-day-height);
+  height: var(--rdp-day-height, auto);
 }
 
 .rdp-day > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  width: 100%;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .rdp-root:not(.calendar-fluid) .rdp-day > div {
+    height: 100%;
+  }
+}
+
+.calendar-fluid .rdp-day {
+  width: 14.285714% !important;
+  height: auto !important;
+  vertical-align: top;
+}
+
+.calendar-fluid .rdp-day > div {
+  height: auto;
+}
+
+.calendar-fluid .rdp-week {
+  height: auto;
+}
+
+.calendar-fluid .rdp-day > div > span {
+  display: flex;
+  width: 100%;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Selected day fill — rdp's `.rdp-day_button { background: none }` overrides Tailwind bg-* */
@@ -43,7 +104,6 @@
 }
 
 .rdp-selected .rdp-day_button {
-  border-color: transparent;
   background-color: rgb(147 197 253); /* blue-300 */
   color: rgb(30 58 138); /* blue-900 */
 }

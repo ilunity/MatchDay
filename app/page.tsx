@@ -15,17 +15,17 @@ export default async function HomePage() {
           {ru.heroTitle}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">{ru.heroSubtitle}</p>
-        <div className="mt-8 flex w-full max-w-sm flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
+        <div className="mx-auto mt-8 grid w-full max-w-sm gap-3 sm:max-w-md sm:grid-cols-2">
           {session ? (
             <>
-              <Link href="/events/new" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto">
+              <Link href="/events/new" className="w-full">
+                <Button size="lg" className="w-full">
                   <CalendarPlus className="h-4 w-4" />
                   {ru.createEvent}
                 </Button>
               </Link>
-              <Link href="/dashboard" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link href="/dashboard" className="w-full">
+                <Button size="lg" variant="outline" className="w-full">
                   <LayoutDashboard className="h-4 w-4" />
                   {ru.dashboard}
                 </Button>
@@ -33,11 +33,13 @@ export default async function HomePage() {
             </>
           ) : (
             <>
-              <Link href="/login?callbackUrl=/events/new" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto">{ru.getStarted}</Button>
+              <Link href="/login?callbackUrl=/events/new" className="w-full">
+                <Button size="lg" className="w-full">
+                  {ru.getStarted}
+                </Button>
               </Link>
-              <Link href="/login" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link href="/login" className="w-full">
+                <Button size="lg" variant="outline" className="w-full">
                   {ru.login}
                 </Button>
               </Link>

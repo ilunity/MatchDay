@@ -7,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { dateKey, normalizeDates } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 function dateSetsEqual(a: Date[], b: Date[]): boolean {
@@ -91,7 +92,7 @@ export function AvailabilityCalendar({
   }
 
   const isDayDisabled = (date: Date) => !possibleSet.has(dateKey(date));
-  const isMdUp = useMediaQuery("(min-width: 768px)");
+  const isLgUp = useMediaQuery("(min-width: 600px)");
 
   return (
     <div className="space-y-4">
@@ -103,21 +104,24 @@ export function AvailabilityCalendar({
       </div>
       <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <div className="w-full shrink-0 lg:w-auto">
-          <div className="flex w-full max-w-full flex-col rounded-lg border bg-card p-2 md:mx-0 md:w-fit">
-            <Calendar
-              size={isMdUp ? "lg" : "sm"}
-              mode="multiple"
-              selected={selected}
-              onSelect={handleSelect}
-              possibleDates={possibleDates}
-              bestDates={bestDates}
-              participantsByDate={participantsByDate}
-              currentUserName={currentUserName}
-              showParticipantTooltip={!isEditing}
-              readOnly={!isEditing}
-              disabled={disabled ? true : isDayDisabled}
-              numberOfMonths={1}
-            />
+          <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
+            <div className={cn("w-full", isLgUp && "max-w-xl")}>
+              <Calendar
+                size={isLgUp ? "lg" : "sm"}
+                mode="multiple"
+                selected={selected}
+                onSelect={handleSelect}
+                possibleDates={possibleDates}
+                bestDates={bestDates}
+                participantsByDate={participantsByDate}
+                currentUserName={currentUserName}
+                showParticipantTooltip={!isEditing}
+                readOnly={!isEditing}
+                disabled={disabled ? true : isDayDisabled}
+                numberOfMonths={1}
+                className="w-full"
+              />
+            </div>
             {!disabled && (
               <div className="mt-2 flex flex-wrap gap-2 border-t pt-2">
                 {isEditing ? (

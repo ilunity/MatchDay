@@ -39,8 +39,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const isEditLgUp = useMediaQuery("(min-width: 580px)");
-  const calendarSize = mode === "edit" && isEditLgUp ? "lg" : "sm";
+  const isLgUp = useMediaQuery("(min-width: 600px)");
+  const calendarSize = isLgUp ? "lg" : "sm";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -127,23 +127,18 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         <p className="text-sm text-muted-foreground">
           {mode === "edit" ? ru.possibleDatesEditHint : ru.possibleDatesHint}
         </p>
-        <div
-          className={cn(
-            "rounded-lg border bg-card p-2",
-            mode === "edit" && "w-full max-w-full min-[580px]:w-fit"
-          )}
-        >
-          <Calendar
-            size={calendarSize}
-            mode="multiple"
-            selected={selectedDates}
-            onSelect={(dates) => setSelectedDates(dates ?? [])}
-            possibleDates={selectedDates}
-            numberOfMonths={1}
-            className={
-              mode === "edit" ? "w-full min-[580px]:w-fit" : "w-full md:mx-auto md:w-fit"
-            }
-          />
+        <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
+          <div className={cn("w-full", isLgUp && "max-w-xl")}>
+            <Calendar
+              size={calendarSize}
+              mode="multiple"
+              selected={selectedDates}
+              onSelect={(dates) => setSelectedDates(dates ?? [])}
+              possibleDates={selectedDates}
+              numberOfMonths={1}
+              className="w-full"
+            />
+          </div>
         </div>
         {selectedDates.length === 0 && (
           <p className="text-sm text-destructive">{ru.selectAtLeastOneDate}</p>

@@ -26,30 +26,36 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const CALENDAR_SM_DAY_BUTTON_SIZE = 42;
+const CALENDAR_LG_DAY_BUTTON_SIZE = 50;
+
 const CALENDAR_SIZES = {
   sm: {
-    dayCell: "size-full p-0",
+    dayCell: "shrink-0 rounded-md p-1.5",
     dayColumn: "h-auto p-0 md:h-[42px]",
     weekdayCell: "h-8 p-0",
-    dayBox: "w-full aspect-square md:aspect-auto md:size-[42px]",
+    dayBox:
+      "flex w-full aspect-square items-center justify-center md:aspect-auto md:size-[42px]",
     gridWidth: "w-full md:w-[294px]",
     cssVars:
       "[--rdp-day-height:auto] md:[--rdp-day-height:42px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
     dayNumber: "text-sm",
     participantCount: "text-[0.65rem]",
     weekday: "text-[0.8rem]",
+    dayButtonSize: CALENDAR_SM_DAY_BUTTON_SIZE,
   },
   lg: {
-    dayCell: "size-full p-0",
-    dayColumn: "h-[100px] p-0",
-    weekdayCell: "h-10 p-0",
-    dayBox: "size-[72px]",
-    gridWidth: "w-[497px]",
+    dayCell: "shrink-0 rounded-md p-1.5",
+    dayColumn: "h-auto p-0",
+    weekdayCell: "py-1.5",
+    dayBox: "flex w-full aspect-square items-center justify-center",
+    gridWidth: "w-full",
     cssVars:
-      "[--rdp-day-height:100px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
+      "[--rdp-day-height:auto] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
     dayNumber: "text-lg",
     participantCount: "text-sm",
     weekday: "text-base",
+    dayButtonSize: CALENDAR_LG_DAY_BUTTON_SIZE,
   },
 } as const;
 
@@ -72,7 +78,8 @@ function createDayButton({
   currentUserName,
   selectedDateKeys,
 }: DayButtonOptions) {
-  const { dayCell, dayNumber, participantCount } = CALENDAR_SIZES[size];
+  const { dayCell, dayNumber, participantCount, dayButtonSize } =
+    CALENDAR_SIZES[size];
 
   return function AvailabilityDayButton({
     day,
@@ -98,9 +105,19 @@ function createDayButton({
     const button = (
       <button
         type="button"
+        style={
+          dayButtonSize
+            ? {
+                width: dayButtonSize,
+                height: dayButtonSize,
+                minWidth: dayButtonSize,
+                minHeight: dayButtonSize,
+              }
+            : undefined
+        }
         className={cn(
           dayCell,
-          "relative flex size-full flex-col items-center justify-center gap-0 rounded-md text-xs font-normal",
+          "relative flex flex-col items-center justify-center gap-0 text-xs font-normal",
           cursorClass,
           readOnly
             ? "hover:opacity-100"
@@ -265,7 +282,7 @@ function createDayCell(dayBox: string) {
   function Day({ children, className, ...props }: React.ComponentProps<"td">) {
     return (
       <td className={className} {...props}>
-        <div className="flex items-center justify-center">
+        <div className="flex w-full justify-center">
           <span className={cn("flex items-center justify-center", dayBox)}>
             {children}
           </span>
@@ -366,9 +383,18 @@ function Calendar({
       defaultMonth={defaultMonth}
       startMonth={startMonth}
       endMonth={endMonth}
-      className={cn("p-3", cssVars, className)}
+      className={cn(
+        "rounded-md border border-border bg-background p-3",
+        size === "lg" && "calendar-fluid",
+        cssVars,
+        className
+      )}
       classNames={{
-        root: cn("w-full md:w-fit", defaultClassNames.root),
+        root: cn(
+          "w-full",
+          size === "sm" && "md:w-fit",
+          defaultClassNames.root
+        ),
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
         month: cn("flex flex-col gap-4", defaultClassNames.month),
         month_caption: cn(
@@ -410,12 +436,12 @@ function Calendar({
         ),
         month_grid: cn(
           gridWidth,
-          "table-fixed border-collapse",
+          "table-fixed border-collapse overflow-hidden rounded-sm border border-border",
           defaultClassNames.month_grid
         ),
         weekdays: cn(defaultClassNames.weekdays),
         weekday: cn(
-          "text-muted-foreground w-[14.285714%] p-0 !text-center font-normal align-middle",
+          "border border-border text-muted-foreground w-[14.285714%] p-0 !text-center font-normal align-middle",
           weekdayCell,
           weekday,
           defaultClassNames.weekday
@@ -423,11 +449,11 @@ function Calendar({
         weeks: cn(defaultClassNames.weeks),
         week: cn(defaultClassNames.week),
         day: cn(
-          "relative p-0 text-center text-sm align-middle",
+          "relative border border-border p-0 text-center text-sm align-middle",
           dayColumn,
           defaultClassNames.day
         ),
-        day_button: cn("size-full", defaultClassNames.day_button),
+        day_button: defaultClassNames.day_button,
         selected: defaultClassNames.selected,
         today: cn(defaultClassNames.today),
         outside: cn("text-muted-foreground opacity-50", defaultClassNames.outside),
