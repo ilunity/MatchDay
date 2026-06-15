@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { setAvailability } from "@/actions/availability";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Calendar } from "@/components/ui/calendar";
+import { DateStats } from "@/components/date-stats";
 import { Button } from "@/components/ui/button";
-import { dateKey, normalizeDates } from "@/lib/dates";
+import { dateKey, getDefaultMonth, normalizeDates, parseDateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -27,7 +28,8 @@ export function AvailabilityCalendar({
   participantsByDate,
   currentUserName,
   disabled,
-  statsAside,
+  stats,
+  totalParticipants,
 }: {
   eventId: string;
   eventSlug: string;
@@ -37,7 +39,8 @@ export function AvailabilityCalendar({
   participantsByDate?: Record<string, string[]>;
   currentUserName?: string;
   disabled?: boolean;
-  statsAside?: ReactNode;
+  stats?: Array<{ date: string; count: number; participants?: string[] }>;
+  totalParticipants?: number;
 }) {
   const possibleSet = new Set(possibleDates.map(dateKey));
   const [isEditing, setIsEditing] = useState(false);
@@ -45,6 +48,33 @@ export function AvailabilityCalendar({
     normalizeDates(initialSelected)
   );
   const [pending, startTransition] = useTransition();
+  const [month, setMonth] = useState(() => getDefaultMonth(possibleDates));
+  const [highlightedDate, setHighlightedDate] = useState<string | null>(null);
+  const [highlightKey, setHighlightKey] = useState(0);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function handleBestDateClick(date: string) {
+    const parsed = parseDateKey(date);
+    setMonth(new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), 1));
+    setHighlightedDate(date);
+    setHighlightKey((key) => key + 1);
+
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+    }
+    highlightTimeoutRef.current = setTimeout(() => {
+      setHighlightedDate(null);
+      highlightTimeoutRef.current = null;
+    }, 2000);
+  }
 
   useEffect(() => {
     setSelected(normalizeDates(initialSelected));
@@ -111,6 +141,8 @@ export function AvailabilityCalendar({
                 mode="multiple"
                 selected={selected}
                 onSelect={handleSelect}
+                month={month}
+                onMonthChange={setMonth}
                 possibleDates={possibleDates}
                 bestDates={bestDates}
                 participantsByDate={participantsByDate}
@@ -118,6 +150,8 @@ export function AvailabilityCalendar({
                 showParticipantTooltip={!isEditing}
                 readOnly={!isEditing}
                 disabled={disabled ? true : isDayDisabled}
+                highlightedDate={highlightedDate}
+                highlightKey={highlightKey}
                 numberOfMonths={1}
                 className="w-full"
               />
@@ -158,10 +192,15 @@ export function AvailabilityCalendar({
             )}
           </div>
         </div>
-        {statsAside && (
+        {stats && totalParticipants !== undefined && (
           <div className="relative min-w-0 flex-1 lg:self-stretch">
             <div className="flex min-h-0 flex-col lg:absolute lg:inset-0 lg:overflow-hidden">
-              {statsAside}
+              <DateStats
+                stats={stats}
+                totalParticipants={totalParticipants}
+                currentUserName={currentUserName}
+                onDateClick={handleBestDateClick}
+              />
             </div>
           </div>
         )}

@@ -9,7 +9,6 @@ import { ru } from "@/lib/i18n/ru";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { CompleteProfileForm } from "@/components/complete-profile-form";
 import { EventHeader } from "@/components/event-header";
-import { DateStats } from "@/components/date-stats";
 import { GuestNameForm } from "@/components/guest-name-form";
 import { ShareLink } from "@/components/share-link";
 import { Button } from "@/components/ui/button";
@@ -101,13 +100,8 @@ export default async function EventPage({ params }: PageProps) {
           participantsByDate={participantsByDate}
           currentUserName={currentUserName}
           disabled={calendarDisabled}
-          statsAside={
-            <DateStats
-              stats={stats}
-              totalParticipants={totalParticipants}
-              currentUserName={currentUserName}
-            />
-          }
+          stats={stats}
+          totalParticipants={totalParticipants}
         />
       </div>
     </>

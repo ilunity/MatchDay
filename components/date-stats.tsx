@@ -9,10 +9,12 @@ export function DateStats({
   stats,
   totalParticipants,
   currentUserName,
+  onDateClick,
 }: {
   stats: Stat[];
   totalParticipants: number;
   currentUserName?: string;
+  onDateClick?: (date: string) => void;
 }) {
   const maxCount = stats[0]?.count ?? 0;
 
@@ -36,6 +38,16 @@ export function DateStats({
               const pct = maxCount > 0 ? (stat.count / maxCount) * 100 : 0;
               return (
                 <li key={stat.date} className="space-y-1">
+                  <button
+                    type="button"
+                    disabled={!onDateClick}
+                    onClick={() => onDateClick?.(stat.date)}
+                    className={cn(
+                      "w-full space-y-1 rounded-md text-left transition-colors",
+                      onDateClick &&
+                        "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                    )}
+                  >
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">
                       {formatDateShortRu(parseDateKey(stat.date))}
@@ -76,6 +88,7 @@ export function DateStats({
                       style={{ width: `${pct}%` }}
                     />
                   </div>
+                  </button>
                 </li>
               );
             })}

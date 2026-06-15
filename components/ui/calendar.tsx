@@ -77,6 +77,8 @@ type DayButtonOptions = {
   readOnly: boolean;
   currentUserName?: string;
   selectedDateKeys: Set<string>;
+  highlightedDate: string | null;
+  highlightKey: number;
 };
 
 function createDayButton({
@@ -86,6 +88,8 @@ function createDayButton({
   readOnly,
   currentUserName,
   selectedDateKeys,
+  highlightedDate,
+  highlightKey,
 }: DayButtonOptions) {
   const { dayCell, dayNumber, participantCount, dayButtonSize } =
     CALENDAR_SIZES[size];
@@ -102,6 +106,7 @@ function createDayButton({
     const isSelected =
       selectedDateKeys.has(key) || Boolean(modifiers.selected);
     const isDisabled = modifiers.disabled;
+    const isHighlighted = highlightedDate === key;
 
     const cursorClass = isDisabled
       ? "cursor-not-allowed"
@@ -113,6 +118,7 @@ function createDayButton({
 
     const button = (
       <button
+        key={isHighlighted ? `highlight-${highlightKey}` : undefined}
         type="button"
         style={
           dayButtonSize
@@ -132,6 +138,7 @@ function createDayButton({
             ? "hover:opacity-100"
             : "hover:opacity-90 focus-visible:outline-none",
           isDisabled && "opacity-50",
+          isHighlighted && "calendar-day-highlight",
           className
         )}
         aria-label={(() => {
@@ -417,6 +424,8 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   showParticipantTooltip?: boolean;
   readOnly?: boolean;
   currentUserName?: string;
+  highlightedDate?: string | null;
+  highlightKey?: number;
 };
 
 function Calendar({
@@ -431,6 +440,8 @@ function Calendar({
   showParticipantTooltip = false,
   readOnly = false,
   currentUserName,
+  highlightedDate = null,
+  highlightKey = 0,
   modifiers,
   modifiersClassNames,
   components,
@@ -484,6 +495,8 @@ function Calendar({
         readOnly,
         currentUserName,
         selectedDateKeys,
+        highlightedDate,
+        highlightKey,
       }),
     [
       size,
@@ -492,6 +505,8 @@ function Calendar({
       readOnly,
       currentUserName,
       selectedDateKeys,
+      highlightedDate,
+      highlightKey,
     ]
   );
   const navButtons = React.useMemo(
