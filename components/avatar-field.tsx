@@ -141,13 +141,13 @@ export function AvatarField({
     <div className="space-y-2">
       <Label htmlFor="avatar">{ru.avatar}</Label>
       {removeAvatar && <input type="hidden" name="removeAvatar" value="on" />}
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-center gap-4">
         {showUploadedPreview ? (
           <UserAvatar userId={userId} name={userName} avatarUrl={previewUrl} size={128} />
         ) : (
           <UserAvatar userId={userId} name={userName} size={128} />
         )}
-        <div className="flex w-full flex-col gap-2 sm:w-auto">
+        <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
           <Button
             type="button"
             variant="outline"
