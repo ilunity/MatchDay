@@ -216,16 +216,14 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   >
                     {ru.cancelEdit}
                   </Button>
-                  {hasDateChanges && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleResetDatesEdit}
-                      className="w-full sm:w-auto"
-                    >
-                      {ru.reset}
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleResetDatesEdit}
+                    className="w-full sm:w-auto"
+                  >
+                    {ru.reset}
+                  </Button>
                 </>
               ) : (
                 <Button
