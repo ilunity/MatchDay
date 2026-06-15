@@ -29,12 +29,12 @@ import {
 const CALENDAR_SIZES = {
   sm: {
     dayCell: "size-full p-0",
-    dayColumn: "h-[42px] p-0",
+    dayColumn: "h-auto p-0 md:h-[42px]",
     weekdayCell: "h-8 p-0",
-    dayBox: "size-[42px]",
-    gridWidth: "w-[294px]",
+    dayBox: "w-full aspect-square md:aspect-auto md:size-[42px]",
+    gridWidth: "w-full md:w-[294px]",
     cssVars:
-      "[--rdp-day-height:42px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
+      "[--rdp-day-height:auto] md:[--rdp-day-height:42px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
     dayNumber: "text-sm",
     participantCount: "text-[0.65rem]",
     weekday: "text-[0.8rem]",
@@ -250,7 +250,7 @@ function createDayCell(dayBox: string) {
   function Day({ children, className, ...props }: React.ComponentProps<"td">) {
     return (
       <td className={className} {...props}>
-        <span className={cn("inline-flex items-center justify-center", dayBox)}>
+        <span className={cn("flex items-center justify-center", dayBox)}>
           {children}
         </span>
       </td>
@@ -351,7 +351,7 @@ function Calendar({
       endMonth={endMonth}
       className={cn("p-3", cssVars, className)}
       classNames={{
-        root: cn("w-fit", defaultClassNames.root),
+        root: cn("w-full md:w-fit", defaultClassNames.root),
         months: cn("flex flex-col sm:flex-row gap-4", defaultClassNames.months),
         month: cn("flex flex-col gap-4", defaultClassNames.month),
         month_caption: cn(

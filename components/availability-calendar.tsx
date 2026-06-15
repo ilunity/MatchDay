@@ -103,7 +103,7 @@ export function AvailabilityCalendar({
       </div>
       <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <div className="w-full shrink-0 lg:w-auto">
-          <div className="mx-auto flex w-fit max-w-full flex-col overflow-x-auto rounded-lg border bg-card p-2 lg:mx-0">
+          <div className="flex w-full max-w-full flex-col rounded-lg border bg-card p-2 md:mx-0 md:w-fit">
             <Calendar
               size={isMdUp ? "lg" : "sm"}
               mode="multiple"

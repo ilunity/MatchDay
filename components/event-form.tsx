@@ -121,7 +121,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         <p className="text-sm text-muted-foreground">
           {mode === "edit" ? ru.possibleDatesEditHint : ru.possibleDatesHint}
         </p>
-        <div className="overflow-x-auto rounded-lg border bg-card p-2">
+        <div className="rounded-lg border bg-card p-2">
           <Calendar
             size="sm"
             mode="multiple"
@@ -129,7 +129,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             onSelect={(dates) => setSelectedDates(dates ?? [])}
             possibleDates={selectedDates}
             numberOfMonths={1}
-            className="mx-auto w-fit"
+            className="w-full md:mx-auto md:w-fit"
           />
         </div>
         {selectedDates.length === 0 && (
