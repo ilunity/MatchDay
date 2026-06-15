@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getEventForOwner } from "@/actions/events";
+import { getEventForOwner, getEventStats } from "@/actions/events";
 import { EventForm } from "@/components/event-form";
 import { ru } from "@/lib/i18n/ru";
 
@@ -14,6 +14,10 @@ export default async function EditEventPage({ params }: PageProps) {
   if (!event) {
     notFound();
   }
+
+  const statsData = await getEventStats(slug);
+  const participantsByDate = statsData?.participantsByDate ?? {};
+  const bestDates = statsData?.stats.slice(0, 3).map((s) => s.date) ?? [];
 
   return (
     <div className="container max-w-2xl px-4 py-8">
@@ -32,6 +36,8 @@ export default async function EditEventPage({ params }: PageProps) {
             : undefined,
           possibleDates: event.possibleDates.map((d) => new Date(d)),
           requireAuth: event.requireAuth,
+          participantsByDate,
+          bestDates,
         }}
       />
     </div>

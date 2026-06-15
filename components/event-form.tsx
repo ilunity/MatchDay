@@ -30,6 +30,8 @@ type EventFormInitial = {
   coverUrl?: string;
   possibleDates: Date[];
   requireAuth?: boolean;
+  participantsByDate?: Record<string, string[]>;
+  bestDates?: string[];
 };
 
 type EventFormProps =
@@ -182,6 +184,9 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 selectedDates.length > 0 ? selectedDates : undefined
               )}
               readOnly={mode === "edit" && !isEditingDates}
+              participantsByDate={initial?.participantsByDate}
+              bestDates={initial?.bestDates}
+              showParticipantTooltip={mode === "edit" && !isEditingDates}
               numberOfMonths={1}
               className="w-full"
             />
