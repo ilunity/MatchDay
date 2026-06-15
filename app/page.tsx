@@ -19,13 +19,13 @@ export default async function HomePage() {
           {session ? (
             <>
               <Link href="/events/new" className="w-full">
-                <Button size="lg" className="w-full">
+                <Button className="w-full">
                   <CalendarPlus className="h-4 w-4" />
                   {ru.createEvent}
                 </Button>
               </Link>
               <Link href="/dashboard" className="w-full">
-                <Button size="lg" variant="outline" className="w-full">
+                <Button variant="outline" className="w-full">
                   <LayoutDashboard className="h-4 w-4" />
                   {ru.dashboard}
                 </Button>
@@ -34,12 +34,13 @@ export default async function HomePage() {
           ) : (
             <>
               <Link href="/login?callbackUrl=/events/new" className="w-full">
-                <Button size="lg" className="w-full">
+                <Button className="w-full">
+                  <CalendarPlus className="h-4 w-4" />
                   {ru.getStarted}
                 </Button>
               </Link>
               <Link href="/login" className="w-full">
-                <Button size="lg" variant="outline" className="w-full">
+                <Button variant="outline" className="w-full">
                   {ru.login}
                 </Button>
               </Link>
