@@ -421,7 +421,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           >
             <div
               className={cn(
-                "order-1 w-full shrink-0 max-w-xl",
+                "max-lg:order-1 w-full shrink-0 max-w-xl",
                 !showDatePresets && "lg:mx-auto"
               )}
             >
@@ -443,7 +443,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             </div>
             {showDatePresets && (
               <>
-                <div className="order-3 flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
+                <div className="max-lg:order-3 flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
                   <Accordion type="single" collapsible>
                     <AccordionItem value="presets" className="border-none">
                       <AccordionTrigger className="py-2 hover:no-underline">
@@ -491,8 +491,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             mode === "edit" ? (
               <div
                 className={cn(
-                  "order-2 mt-2 flex w-full flex-col gap-2 border-t pt-2",
-                  "lg:order-none lg:basis-full lg:flex-row lg:items-center lg:gap-2 lg:w-full",
+                  "max-lg:order-2 mt-2 flex w-full flex-col gap-2 border-t pt-2",
+                  "lg:basis-full lg:flex-row lg:items-center lg:gap-2 lg:w-full",
                   mode === "edit" && !isEditingDates
                     ? "lg:justify-center"
                     : mode === "edit" && isEditingDates
