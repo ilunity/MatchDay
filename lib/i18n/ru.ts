@@ -47,6 +47,7 @@ export const ru = {
   availabilitySaved: "Даты сохранены",
   bestDates: "Лучшие даты",
   bestDatesHint: "Даты, когда доступно больше всего участников",
+  showDateInCalendar: "Показать в календаре",
   participants: "участников",
   participant: "участник",
   noEvents: "У вас пока нет мероприятий",

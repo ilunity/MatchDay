@@ -123,21 +123,16 @@
 
 @keyframes calendar-day-highlight-fade {
   0% {
-    background-color: rgb(254 240 138); /* yellow-200 */
+    background-color: color-mix(in srgb, var(--primary) 55%, transparent);
+    color: var(--primary-foreground);
+  }
+  35% {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
   }
   100% {
     background-color: transparent;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  @keyframes calendar-day-highlight-fade {
-    0% {
-      background-color: rgb(113 63 18); /* yellow-900 */
-    }
-    100% {
-      background-color: transparent;
-    }
+    color: inherit;
   }
 }
 

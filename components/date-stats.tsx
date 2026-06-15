@@ -1,7 +1,16 @@
+"use client";
+
+import { CalendarDays } from "lucide-react";
 import { formatDateShortRu, parseDateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Stat = { date: string; count: number; participants?: string[] };
 
@@ -38,28 +47,39 @@ export function DateStats({
               const pct = maxCount > 0 ? (stat.count / maxCount) * 100 : 0;
               return (
                 <li key={stat.date} className="space-y-1">
-                  <button
-                    type="button"
-                    disabled={!onDateClick}
-                    onClick={() => onDateClick?.(stat.date)}
-                    className={cn(
-                      "w-full space-y-1 rounded-md text-left transition-colors",
-                      onDateClick &&
-                        "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                    )}
-                  >
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between gap-2 text-sm">
                     <span className="font-medium">
                       {formatDateShortRu(parseDateKey(stat.date))}
                     </span>
-                    <span className="text-muted-foreground">
-                      {stat.count}{" "}
-                      {stat.count === 1
-                        ? ru.participant
-                        : stat.count < 5
-                          ? "участника"
-                          : ru.participants}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="text-muted-foreground">
+                        {stat.count}{" "}
+                        {stat.count === 1
+                          ? ru.participant
+                          : stat.count < 5
+                            ? "участника"
+                            : ru.participants}
+                      </span>
+                      {onDateClick && (
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-foreground"
+                              onClick={() => onDateClick(stat.date)}
+                              aria-label={ru.showDateInCalendar}
+                            >
+                              <CalendarDays className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {ru.showDateInCalendar}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </div>
                   {stat.participants && stat.participants.length > 0 && (
                     <p className="break-words text-xs text-muted-foreground">
@@ -88,7 +108,6 @@ export function DateStats({
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  </button>
                 </li>
               );
             })}
