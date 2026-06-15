@@ -185,6 +185,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
 
   const today = useMemo(() => getToday(), []);
   const datesEditable = mode === "create" || isEditingDates;
+  const showDatePresets =
+    mode === "create" || (mode === "edit" && isEditingDates);
   const canUndo = dateHistory.past.length > 0;
   const canRedo = dateHistory.future.length > 0;
 
@@ -411,8 +413,20 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             : ru.possibleDatesHint}
         </p>
         <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
-          <div className="flex w-full flex-col gap-4 lg:min-h-0 lg:flex-row lg:items-stretch">
-            <div className={cn("w-full shrink-0 lg:max-w-xl", isLgUp && "max-w-xl")}>
+          <div
+            className={cn(
+              "flex w-full flex-col gap-4",
+              showDatePresets
+                ? "lg:min-h-0 lg:flex-row lg:items-stretch"
+                : "lg:items-center"
+            )}
+          >
+            <div
+              className={cn(
+                "w-full shrink-0 max-w-xl",
+                !showDatePresets && "lg:mx-auto"
+              )}
+            >
               <Calendar
                 size={calendarSize}
                 mode="multiple"
@@ -429,7 +443,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 className="w-full"
               />
             </div>
-            {datesEditable && (
+            {showDatePresets && (
               <>
                 <div className="flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
                   <Accordion type="single" collapsible>
