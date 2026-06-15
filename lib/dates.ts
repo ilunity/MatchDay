@@ -75,8 +75,9 @@ export function formatWeekRangeRu(start: Date, end: Date): string {
   return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
 }
 
+/** Calendar "today" in UTC so SSR and client hydration agree on the same date. */
 export function getToday(): Date {
-  return normalizeDate(new Date());
+  return parseDateKey(new Date().toISOString().slice(0, 10));
 }
 
 export function monthKey(date: Date): string {

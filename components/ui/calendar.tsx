@@ -16,6 +16,7 @@ import {
   getDefaultMonth,
   getEventPageYearDropdownOptions,
   getMonthsWithPossibleDates,
+  getToday,
   getYearsWithPossibleDates,
   isYearInCalendarDropdownRange,
   monthKey,
@@ -446,6 +447,7 @@ function Calendar({
   modifiersClassNames,
   components,
   defaultMonth: defaultMonthProp,
+  today: todayProp,
   ...props
 }: CalendarProps) {
   const defaultClassNames = getDefaultClassNames();
@@ -517,9 +519,11 @@ function Calendar({
     [restrictToPossibleDates, monthsWithPossible]
   );
   const Day = React.useMemo(() => createDayCell(dayBox), [dayBox]);
+  const today = todayProp ?? getToday();
 
   return (
     <DayPicker
+      today={today}
       locale={ruLocale}
       showOutsideDays={showOutsideDays}
       captionLayout="dropdown"
