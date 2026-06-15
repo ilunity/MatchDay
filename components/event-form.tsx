@@ -12,6 +12,12 @@ import {
 import { Undo2, Redo2 } from "lucide-react";
 import { createEvent, updateEvent } from "@/actions/events";
 import { EventCoverField } from "@/components/event-cover-field";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -348,8 +354,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             : ru.possibleDatesHint}
         </p>
         <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
-          <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
-            <div className={cn("w-full shrink-0", isLgUp && "max-w-xl")}>
+          <div className="flex w-full flex-col gap-4 lg:min-h-0 lg:flex-row lg:items-stretch">
+            <div className={cn("w-full shrink-0 lg:max-w-xl", isLgUp && "max-w-xl")}>
               <Calendar
                 size={calendarSize}
                 mode="multiple"
@@ -367,61 +373,128 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               />
             </div>
             {datesEditable && (
-              <div className="flex w-full flex-col gap-2 border-t pt-2 lg:w-auto lg:min-w-[12rem] lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
-                <div className="flex items-center justify-between gap-2">
-                  <Label>{ru.datePresets.sectionLabel}</Label>
-                  <TooltipProvider delayDuration={300}>
-                    <div className="flex shrink-0 gap-1">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="size-8"
-                            onClick={handleUndo}
-                            disabled={!canUndo}
-                            aria-label={ru.datePresets.undo}
-                          >
-                            <Undo2 className="size-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{ru.datePresets.undo}</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="size-8"
-                            onClick={handleRedo}
-                            disabled={!canRedo}
-                            aria-label={ru.datePresets.redo}
-                          >
-                            <Redo2 className="size-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{ru.datePresets.redo}</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </TooltipProvider>
+              <>
+                <div className="w-full border-t pt-2 lg:hidden">
+                  <Accordion type="single" collapsible>
+                    <AccordionItem value="presets" className="border-none">
+                      <AccordionTrigger className="py-2 hover:no-underline">
+                        {ru.datePresets.sectionLabel}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-end">
+                            <TooltipProvider delayDuration={300}>
+                              <div className="flex shrink-0 gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="size-8"
+                                      onClick={handleUndo}
+                                      disabled={!canUndo}
+                                      aria-label={ru.datePresets.undo}
+                                    >
+                                      <Undo2 className="size-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{ru.datePresets.undo}</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      className="size-8"
+                                      onClick={handleRedo}
+                                      disabled={!canRedo}
+                                      aria-label={ru.datePresets.redo}
+                                    >
+                                      <Redo2 className="size-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{ru.datePresets.redo}</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TooltipProvider>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            {DATE_PRESET_IDS.map((presetId) => (
+                              <Button
+                                key={presetId}
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => handleApplyPreset(presetId)}
+                              >
+                                {DATE_PRESET_LABELS[presetId]}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
-                <div className="flex flex-col gap-2">
-                  {DATE_PRESET_IDS.map((presetId) => (
-                    <Button
-                      key={presetId}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => handleApplyPreset(presetId)}
-                    >
-                      {DATE_PRESET_LABELS[presetId]}
-                    </Button>
-                  ))}
+                <div className="hidden min-w-0 flex-1 flex-col gap-2 self-stretch border-l pl-4 lg:flex lg:min-h-0 lg:w-full">
+                  <div className="flex shrink-0 items-center justify-between gap-2">
+                    <Label>{ru.datePresets.sectionLabel}</Label>
+                    <TooltipProvider delayDuration={300}>
+                      <div className="flex shrink-0 gap-1">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="size-8"
+                              onClick={handleUndo}
+                              disabled={!canUndo}
+                              aria-label={ru.datePresets.undo}
+                            >
+                              <Undo2 className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>{ru.datePresets.undo}</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="size-8"
+                              onClick={handleRedo}
+                              disabled={!canRedo}
+                              aria-label={ru.datePresets.redo}
+                            >
+                              <Redo2 className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>{ru.datePresets.redo}</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
+                  </div>
+                  <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+                    {DATE_PRESET_IDS.map((presetId) => (
+                      <Button
+                        key={presetId}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleApplyPreset(presetId)}
+                      >
+                        {DATE_PRESET_LABELS[presetId]}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
           {(mode === "create" && selectedDates.length > 0) ||
