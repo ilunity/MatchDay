@@ -6,7 +6,13 @@ import { toast } from "sonner";
 import { CoverCropDialog } from "@/components/cover-crop-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { validateImageFile } from "@/lib/image-constants";
+import { getImageAspectRatio } from "@/lib/crop-image";
+import {
+  type CoverAspectPresetId,
+  coverAspectPresetById,
+  nearestCoverAspectPresetId,
+  validateImageFile,
+} from "@/lib/image-constants";
 import { ru } from "@/lib/i18n/ru";
 
 type EventCoverFieldProps = {
@@ -44,6 +50,22 @@ export function EventCoverField({
   const [cropMimeType, setCropMimeType] = useState("image/jpeg");
   const [cropFileName, setCropFileName] = useState("cover.jpg");
   const [pendingCropUrl, setPendingCropUrl] = useState<string | null>(null);
+  const [aspectPresetId, setAspectPresetId] = useState<CoverAspectPresetId>("16:9");
+
+  useEffect(() => {
+    if (!initialCoverUrl) return;
+
+    let cancelled = false;
+    getImageAspectRatio(initialCoverUrl).then((ratio) => {
+      if (!cancelled) {
+        setAspectPresetId(nearestCoverAspectPresetId(ratio));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialCoverUrl]);
 
   useEffect(() => {
     return () => {
@@ -135,22 +157,23 @@ export function EventCoverField({
 
   const showPreview = previewUrl && !removeCover;
 
-  const aspectClass = "aspect-[16/9]";
+  const aspectRatio = coverAspectPresetById(aspectPresetId).ratio;
+  const previewAspectStyle = { aspectRatio: `${aspectRatio}` };
 
   const previewClass = compact
-    ? `relative ${aspectClass} w-full overflow-hidden rounded-lg bg-muted`
-    : `relative ${aspectClass} w-full overflow-hidden rounded-xl bg-muted`;
+    ? "relative w-full overflow-hidden rounded-lg bg-muted"
+    : "relative w-full overflow-hidden rounded-xl bg-muted";
 
   const placeholderClass = compact
-    ? `flex ${aspectClass} w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50`
-    : `flex ${aspectClass} w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50`;
+    ? "flex w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50"
+    : "flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50";
 
   return (
     <div className="space-y-2">
       <Label htmlFor="cover">{ru.cover}</Label>
       {removeCover && <input type="hidden" name="removeCover" value="on" />}
       {showPreview ? (
-        <div className={previewClass}>
+        <div className={previewClass} style={previewAspectStyle}>
           <Image
             src={previewUrl}
             alt={ru.cover}
@@ -164,6 +187,7 @@ export function EventCoverField({
           type="button"
           onClick={() => inputRef.current?.click()}
           className={placeholderClass}
+          style={previewAspectStyle}
         >
           <span>{ru.uploadCover}</span>
           {!compact && <span className="text-xs">{ru.coverHint}</span>}
@@ -211,6 +235,8 @@ export function EventCoverField({
         imageSrc={cropImageSrc}
         sourceMimeType={cropMimeType}
         sourceFileName={cropFileName}
+        aspectPresetId={aspectPresetId}
+        onAspectPresetIdChange={setAspectPresetId}
         onOpenChange={setCropDialogOpen}
         onConfirm={handleCropConfirm}
         onCancel={handleCropCancel}

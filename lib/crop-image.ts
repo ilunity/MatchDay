@@ -1,8 +1,18 @@
 import type { Area } from "react-easy-crop";
 
-export const COVER_ASPECT = 16 / 9;
+import { DEFAULT_COVER_ASPECT_RATIO } from "@/lib/image-constants";
+
+/** @deprecated Use DEFAULT_COVER_ASPECT_RATIO from image-constants */
+export const COVER_ASPECT = DEFAULT_COVER_ASPECT_RATIO;
 
 const MAX_OUTPUT_WIDTH = 1920;
+
+export function getImageAspectRatio(src: string): Promise<number> {
+  return loadImage(src).then(
+    (image) => image.naturalWidth / image.naturalHeight,
+    () => DEFAULT_COVER_ASPECT_RATIO
+  );
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

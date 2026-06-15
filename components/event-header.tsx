@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import { ru } from "@/lib/i18n/ru";
 import { linkifyText } from "@/lib/linkify";
 
@@ -29,16 +28,12 @@ export function EventHeader({
         <div className="md:clearfix">
           {coverUrl && (
             <div className="mb-5 w-full md:float-left md:mb-5 md:mr-5 md:w-[60%]">
-              <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
-                <Image
-                  src={coverUrl}
-                  alt={ru.cover}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverUrl}
+                alt={ru.cover}
+                className="h-auto w-full rounded-xl bg-muted"
+              />
             </div>
           )}
           {description && (
