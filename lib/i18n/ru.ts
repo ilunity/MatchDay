@@ -41,6 +41,7 @@ export const ru = {
   changeSelection: "Изменить выбор",
   cancelEdit: "Отмена",
   reset: "Сбросить",
+  resetAllDates: "Сбросить все даты",
   saveAvailability: "Сохранить",
   availabilitySaved: "Даты сохранены",
   bestDates: "Лучшие даты",

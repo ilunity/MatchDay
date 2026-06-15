@@ -196,7 +196,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   onClick={handleResetDatesCreate}
                   className="w-full sm:w-auto"
                 >
-                  {ru.reset}
+                  {ru.resetAllDates}
                 </Button>
               ) : isEditingDates ? (
                 <>
@@ -222,7 +222,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                     onClick={handleResetDatesEdit}
                     className="w-full sm:w-auto"
                   >
-                    {ru.reset}
+                    {ru.resetAllDates}
                   </Button>
                 </>
               ) : (
