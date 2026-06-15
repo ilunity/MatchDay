@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getEventForOwner, getEventStats } from "@/actions/events";
 import { EventForm } from "@/components/event-form";
+import { auth } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
 
 type PageProps = {
@@ -18,6 +19,8 @@ export default async function EditEventPage({ params }: PageProps) {
   const statsData = await getEventStats(slug);
   const participantsByDate = statsData?.participantsByDate ?? {};
   const bestDates = statsData?.stats.slice(0, 3).map((s) => s.date) ?? [];
+  const session = await auth();
+  const currentUserName = session?.user?.name?.trim() || undefined;
 
   return (
     <div className="container max-w-2xl px-4 py-8">
@@ -27,6 +30,7 @@ export default async function EditEventPage({ params }: PageProps) {
       </div>
       <EventForm
         mode="edit"
+        currentUserName={currentUserName}
         initial={{
           slug: event.slug,
           title: event.title,

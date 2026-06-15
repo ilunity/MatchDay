@@ -36,11 +36,12 @@ type EventFormInitial = {
 
 type EventFormProps =
   | { mode?: "create" }
-  | { mode: "edit"; initial: EventFormInitial };
+  | { mode: "edit"; initial: EventFormInitial; currentUserName?: string };
 
 export function EventForm(props: EventFormProps = { mode: "create" }) {
   const isEdit = props.mode === "edit";
   const initial = isEdit ? props.initial : undefined;
+  const currentUserName = isEdit ? props.currentUserName : undefined;
   const mode = isEdit ? "edit" : "create";
 
   const savedDates = useMemo(
@@ -186,6 +187,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               readOnly={mode === "edit" && !isEditingDates}
               participantsByDate={initial?.participantsByDate}
               bestDates={initial?.bestDates}
+              currentUserName={currentUserName}
               showParticipantTooltip={mode === "edit" && !isEditingDates}
               numberOfMonths={1}
               className="w-full"

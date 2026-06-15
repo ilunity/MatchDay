@@ -85,6 +85,7 @@ export const ru = {
   completeProfileHint:
     "Укажите имя, чтобы участвовать в мероприятиях и отображаться в списке доступности",
   calendarParticipants: "Участники в этот день",
+  calendarParticipantYou: "(вы)",
   eventNotFound: "Мероприятие не найдено",
   backHome: "На главную",
   openEvent: "Открыть",

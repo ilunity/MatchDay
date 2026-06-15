@@ -173,17 +173,21 @@ function createDayButton({
           <TooltipContent side="top" className="max-w-xs">
             <p className="mb-1 font-medium">{ru.calendarParticipants}</p>
             <ul className="space-y-0.5">
-              {names.map((name) => (
-                <li
-                  key={name}
-                  className={cn(
-                    currentUserName === name &&
-                      "font-medium text-green-600 dark:text-green-400"
-                  )}
-                >
-                  {name}
-                </li>
-              ))}
+              {names.map((name) => {
+                const isCurrentUser = currentUserName === name;
+                return (
+                  <li
+                    key={name}
+                    className={cn(
+                      isCurrentUser &&
+                        "font-medium text-green-600 dark:text-green-400"
+                    )}
+                  >
+                    {name}
+                    {isCurrentUser && ` ${ru.calendarParticipantYou}`}
+                  </li>
+                );
+              })}
             </ul>
           </TooltipContent>
         </Tooltip>
