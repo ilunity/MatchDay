@@ -243,12 +243,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     setIsEditingDates(false);
   }
 
-  function handleResetDatesEdit() {
-    resetDateHistory(savedDates);
-  }
-
-  function handleResetDatesCreate() {
-    resetDateHistory([]);
+  function handleResetAllDates() {
+    setSelectedDates([]);
   }
 
   function handleStartEditingDates() {
@@ -492,7 +488,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleResetDatesCreate}
+                  onClick={handleResetAllDates}
                   className="w-full sm:w-auto"
                 >
                   {ru.resetAllDates}
@@ -518,7 +514,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleResetDatesEdit}
+                    onClick={handleResetAllDates}
                     className="w-full sm:w-auto"
                   >
                     {ru.resetAllDates}
