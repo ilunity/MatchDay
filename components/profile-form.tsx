@@ -70,7 +70,7 @@ export function ProfileForm({
             <p className="text-sm text-muted-foreground">{ru.editNameHint}</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending} className="w-full sm:w-auto">
             {pending ? ru.loading : ru.save}
           </Button>
         </form>
