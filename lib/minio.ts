@@ -69,10 +69,4 @@ export function getPublicStorageUrl(key: string) {
   return `${base}/${encodeURIComponent(key).replace(/%2F/g, "/")}`;
 }
 
-export const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-] as const;
-
-export const MAX_COVER_SIZE = 5 * 1024 * 1024;
+export { ALLOWED_IMAGE_TYPES, MAX_COVER_SIZE } from "@/lib/image-constants";

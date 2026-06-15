@@ -2,14 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { CoverCropDialog } from "@/components/cover-crop-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { validateImageFile } from "@/lib/image-constants";
 import { ru } from "@/lib/i18n/ru";
 
 type EventCoverFieldProps = {
   initialCoverUrl?: string;
   compact?: boolean;
 };
+
+function setFileOnInput(input: HTMLInputElement, file: File) {
+  const dataTransfer = new DataTransfer();
+  dataTransfer.items.add(file);
+  input.files = dataTransfer.files;
+}
+
+function mimeFromFileName(fileName: string): string {
+  if (fileName.endsWith(".png")) return "image/png";
+  if (fileName.endsWith(".webp")) return "image/webp";
+  return "image/jpeg";
+}
+
+function coverValidationMessage(error: "invalid_type" | "too_large"): string {
+  if (error === "invalid_type") return ru.coverInvalidType;
+  return ru.coverTooLarge;
+}
 
 export function EventCoverField({
   initialCoverUrl,
@@ -19,22 +39,90 @@ export function EventCoverField({
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(initialCoverUrl);
   const [removeCover, setRemoveCover] = useState(false);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropMimeType, setCropMimeType] = useState("image/jpeg");
+  const [cropFileName, setCropFileName] = useState("cover.jpg");
+  const [pendingCropUrl, setPendingCropUrl] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (pendingCropUrl) URL.revokeObjectURL(pendingCropUrl);
     };
-  }, [objectUrl]);
+  }, [objectUrl, pendingCropUrl]);
+
+  function revokePendingCropUrl() {
+    if (pendingCropUrl) {
+      URL.revokeObjectURL(pendingCropUrl);
+      setPendingCropUrl(null);
+    }
+  }
+
+  function openCropDialog(
+    imageSrc: string,
+    mimeType: string,
+    fileName: string,
+    revokeOnCancel?: string
+  ) {
+    revokePendingCropUrl();
+    if (revokeOnCancel) {
+      setPendingCropUrl(revokeOnCancel);
+    }
+    setCropImageSrc(imageSrc);
+    setCropMimeType(mimeType);
+    setCropFileName(fileName);
+    setCropDialogOpen(true);
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      toast.error(coverValidationMessage(validationError));
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+
     const nextUrl = URL.createObjectURL(file);
-    setObjectUrl(nextUrl);
-    setPreviewUrl(nextUrl);
+    openCropDialog(nextUrl, file.type, file.name, nextUrl);
+  }
+
+  function handleReposition() {
+    if (!previewUrl || removeCover) return;
+
+    const fileName = previewUrl.startsWith("blob:")
+      ? cropFileName
+      : "cover.jpg";
+    const mimeType = previewUrl.startsWith("blob:")
+      ? cropMimeType
+      : mimeFromFileName(previewUrl);
+
+    openCropDialog(previewUrl, mimeType, fileName);
+  }
+
+  function handleCropConfirm(file: File, nextPreviewUrl: string) {
+    revokePendingCropUrl();
+
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+
+    setObjectUrl(nextPreviewUrl);
+    setPreviewUrl(nextPreviewUrl);
     setRemoveCover(false);
+    setCropMimeType(file.type);
+    setCropFileName(file.name);
+
+    if (inputRef.current) {
+      setFileOnInput(inputRef.current, file);
+    }
+  }
+
+  function handleCropCancel() {
+    revokePendingCropUrl();
+    setCropImageSrc(null);
+    if (inputRef.current) inputRef.current.value = "";
   }
 
   function handleRemove() {
@@ -47,13 +135,15 @@ export function EventCoverField({
 
   const showPreview = previewUrl && !removeCover;
 
+  const aspectClass = "aspect-[16/9]";
+
   const previewClass = compact
-    ? "relative aspect-[3/2] w-full overflow-hidden rounded-lg bg-muted"
-    : "relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted";
+    ? `relative ${aspectClass} w-full overflow-hidden rounded-lg bg-muted`
+    : `relative ${aspectClass} w-full overflow-hidden rounded-xl bg-muted`;
 
   const placeholderClass = compact
-    ? "flex aspect-[3/2] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50"
-    : "flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50";
+    ? `flex ${aspectClass} w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:bg-muted/50`
+    : `flex ${aspectClass} w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 bg-muted/30 px-4 text-center text-sm text-muted-foreground transition-colors hover:bg-muted/50`;
 
   return (
     <div className="space-y-2">
@@ -89,9 +179,19 @@ export function EventCoverField({
           {showPreview ? ru.changeCover : ru.uploadCover}
         </Button>
         {showPreview && (
-          <Button type="button" variant="ghost" size="sm" onClick={handleRemove}>
-            {ru.removeCover}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleReposition}
+            >
+              {ru.adjustCover}
+            </Button>
+            <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
+              {ru.removeCover}
+            </Button>
+          </>
         )}
       </div>
       {compact && (
@@ -105,6 +205,15 @@ export function EventCoverField({
         accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
         className="hidden"
+      />
+      <CoverCropDialog
+        open={cropDialogOpen}
+        imageSrc={cropImageSrc}
+        sourceMimeType={cropMimeType}
+        sourceFileName={cropFileName}
+        onOpenChange={setCropDialogOpen}
+        onConfirm={handleCropConfirm}
+        onCancel={handleCropCancel}
       />
     </div>
   );

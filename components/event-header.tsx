@@ -29,7 +29,7 @@ export function EventHeader({
         <div className="md:clearfix">
           {coverUrl && (
             <div className="mb-5 w-full md:float-left md:mb-5 md:mr-5 md:w-[60%]">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+              <div className="relative aspect-video overflow-hidden rounded-xl bg-muted">
                 <Image
                   src={coverUrl}
                   alt={ru.cover}

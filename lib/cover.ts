@@ -1,26 +1,13 @@
 import { nanoid } from "nanoid";
 import type { HydratedDocument } from "mongoose";
-import {
-  ALLOWED_IMAGE_TYPES,
-  MAX_COVER_SIZE,
-  deleteObject,
-  uploadObject,
-} from "@/lib/minio";
+import { validateImageFile, type ImageValidationError } from "@/lib/image-constants";
+import { deleteObject, uploadObject } from "@/lib/minio";
 import type { IEvent } from "@/models/Event";
 
-export type CoverUploadError =
-  | "invalid_type"
-  | "too_large"
-  | null;
+export type CoverUploadError = ImageValidationError;
 
 export function validateCoverFile(file: File): CoverUploadError {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) {
-    return "invalid_type";
-  }
-  if (file.size > MAX_COVER_SIZE) {
-    return "too_large";
-  }
-  return null;
+  return validateImageFile(file);
 }
 
 export async function removeEventCover(

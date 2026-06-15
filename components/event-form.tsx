@@ -85,7 +85,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         />
       </div>
 
-      <div className="max-w-full sm:max-w-[260px]">
+      <div className="max-w-full sm:max-w-md">
         <EventCoverField compact initialCoverUrl={initial?.coverUrl} />
       </div>
 
