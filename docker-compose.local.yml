@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
-    ports:
+    ports: !override
       - "3000:3000"
     volumes:
       - .:/app
