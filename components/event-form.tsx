@@ -287,13 +287,13 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }, [datesEditable, canUndo, canRedo]);
 
   const undoRedoButtons = (
-    <>
+    <div className="flex w-full gap-2 lg:w-auto">
       <Tooltip delayDuration={200}>
         <TooltipTrigger asChild>
           <Button
             type="button"
             variant="outline"
-            className="w-[150px]"
+            className="w-1/2 lg:w-[150px]"
             onClick={handleUndo}
             disabled={!canUndo}
             aria-label={ru.datePresets.undo}
@@ -308,7 +308,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           <Button
             type="button"
             variant="outline"
-            className="w-[150px]"
+            className="w-1/2 lg:w-[150px]"
             onClick={handleRedo}
             disabled={!canRedo}
             aria-label={ru.datePresets.redo}
@@ -318,7 +318,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         </TooltipTrigger>
         <TooltipContent side="top">{ru.datePresets.redo}</TooltipContent>
       </Tooltip>
-    </>
+    </div>
   );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
