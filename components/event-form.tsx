@@ -287,14 +287,13 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }, [datesEditable, canUndo, canRedo]);
 
   const undoRedoButtons = (
-    <div className="flex w-full gap-2 sm:w-auto">
+    <>
       <Tooltip delayDuration={200}>
         <TooltipTrigger asChild>
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            className="size-9 flex-1 sm:flex-none"
+            className="w-[150px]"
             onClick={handleUndo}
             disabled={!canUndo}
             aria-label={ru.datePresets.undo}
@@ -309,8 +308,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           <Button
             type="button"
             variant="outline"
-            size="icon"
-            className="size-9 flex-1 sm:flex-none"
+            className="w-[150px]"
             onClick={handleRedo}
             disabled={!canRedo}
             aria-label={ru.datePresets.redo}
@@ -320,7 +318,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         </TooltipTrigger>
         <TooltipContent side="top">{ru.datePresets.redo}</TooltipContent>
       </Tooltip>
-    </div>
+    </>
   );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -492,26 +490,51 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           </div>
           {(mode === "create" && selectedDates.length > 0) ||
           mode === "edit" ? (
-            <div className="mt-2 flex w-full flex-wrap gap-2 border-t pt-2">
-              {mode === "create" ? (
-                <>
+            <div className="mt-2 flex w-full flex-col gap-2 border-t pt-2">
+              <div className="flex w-full flex-wrap items-center gap-2 lg:justify-end">
+                {mode === "create" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleResetAllDates}
+                      className="w-full lg:w-auto"
+                    >
+                      {ru.resetAllDates}
+                    </Button>
+                    {undoRedoButtons}
+                  </>
+                ) : isEditingDates ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleResetAllDates}
+                      className="w-full lg:w-auto"
+                    >
+                      {ru.resetAllDates}
+                    </Button>
+                    {undoRedoButtons}
+                  </>
+                ) : (
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={handleResetAllDates}
-                    className="w-full sm:w-auto"
+                    onClick={handleStartEditingDates}
+                    className="w-full lg:ml-auto lg:w-auto"
                   >
-                    {ru.resetAllDates}
+                    {selectedDates.length === 0
+                      ? ru.startSelectingDates
+                      : ru.changeSelection}
                   </Button>
-                  {undoRedoButtons}
-                </>
-              ) : isEditingDates ? (
-                <>
+                )}
+              </div>
+              {mode === "edit" && isEditingDates ? (
+                <div className="grid w-full grid-cols-2 gap-2 lg:flex lg:justify-end">
                   <Button
                     type="button"
                     onClick={handleSaveDatesEdit}
                     disabled={!hasDateChanges}
-                    className="w-full sm:w-auto"
+                    className="w-full lg:w-auto"
                   >
                     {ru.save}
                   </Button>
@@ -519,31 +542,12 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                     type="button"
                     variant="outline"
                     onClick={handleCancelDatesEdit}
-                    className="w-full sm:w-auto"
+                    className="w-full lg:w-auto"
                   >
                     {ru.cancelEdit}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleResetAllDates}
-                    className="w-full sm:w-auto"
-                  >
-                    {ru.resetAllDates}
-                  </Button>
-                  {undoRedoButtons}
-                </>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={handleStartEditingDates}
-                  className="w-full sm:w-auto"
-                >
-                  {selectedDates.length === 0
-                    ? ru.startSelectingDates
-                    : ru.changeSelection}
-                </Button>
-              )}
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
