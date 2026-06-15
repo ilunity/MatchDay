@@ -52,6 +52,7 @@ export function AvailabilityCalendar({
   const [highlightedDate, setHighlightedDate] = useState<string | null>(null);
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -74,6 +75,10 @@ export function AvailabilityCalendar({
       setHighlightedDate(null);
       highlightTimeoutRef.current = null;
     }, 2000);
+
+    if (!window.matchMedia("(min-width: 1024px)").matches) {
+      calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   useEffect(() => {
@@ -133,7 +138,7 @@ export function AvailabilityCalendar({
         </p>
       </div>
       <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-        <div className="w-full shrink-0 lg:w-auto">
+        <div ref={calendarRef} className="w-full shrink-0 lg:w-auto">
           <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
             <div className={cn("w-full", isLgUp && "max-w-xl")}>
               <Calendar

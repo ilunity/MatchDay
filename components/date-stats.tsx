@@ -65,9 +65,9 @@ export function DateStats({
                           <TooltipTrigger asChild>
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="default"
                               size="icon"
-                              className="size-7 text-muted-foreground hover:text-foreground"
+                              className="size-7"
                               onClick={() => onDateClick(stat.date)}
                               aria-label={ru.showDateInCalendar}
                             >
