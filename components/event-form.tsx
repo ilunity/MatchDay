@@ -569,8 +569,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       </div>
 
       {mode === "create" && (
-        <div className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
+        <div className="flex flex-row items-start gap-4 rounded-lg border p-4">
+          <div className="min-w-0 flex-1 space-y-1">
             <Label htmlFor="requireAuth">{ru.requireAuth}</Label>
             <p className="text-sm text-muted-foreground">{ru.requireAuthHint}</p>
           </div>
