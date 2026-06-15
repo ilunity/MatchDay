@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -170,13 +171,16 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const currentUserName = isEdit ? props.currentUserName : undefined;
   const mode = isEdit ? "edit" : "create";
 
-  const savedDates = useMemo(
+  const initialCommittedDates = useMemo(
     () => normalizeDates(initial?.possibleDates ?? []),
     [initial?.possibleDates]
   );
+  const committedDatesRef = useRef(initialCommittedDates);
+  const skipCancelOnCloseRef = useRef(false);
+  const [committedDates, setCommittedDates] = useState(initialCommittedDates);
   const [dateHistory, dispatchDateHistory] = useReducer(dateHistoryReducer, {
     past: [],
-    present: savedDates,
+    present: initialCommittedDates,
     future: [],
   });
   const selectedDates = dateHistory.present;
@@ -187,7 +191,9 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const isLgUp = useMediaQuery("(min-width: 600px)");
   const calendarSize = isLgUp ? "lg" : "sm";
   const [calendarMonth, setCalendarMonth] = useState(() =>
-    getDefaultMonth(savedDates.length > 0 ? savedDates : undefined)
+    getDefaultMonth(
+      initialCommittedDates.length > 0 ? initialCommittedDates : undefined
+    )
   );
 
   const today = useMemo(() => getToday(), []);
@@ -200,8 +206,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const canRedo = dateHistory.future.length > 0;
 
   const hasDateChanges = useMemo(
-    () => !dateSetsEqual(selectedDates, savedDates),
-    [selectedDates, savedDates]
+    () => !dateSetsEqual(selectedDates, committedDates),
+    [selectedDates, committedDates]
   );
 
   const setSelectedDates = useCallback((dates: Date[]) => {
@@ -245,11 +251,16 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }
 
   function handleSaveDatesEdit() {
+    const nextCommitted = selectedDates;
+    committedDatesRef.current = nextCommitted;
+    setCommittedDates(nextCommitted);
+    resetDateHistory(nextCommitted);
+    skipCancelOnCloseRef.current = true;
     setIsEditingDates(false);
   }
 
   function handleCancelDatesEdit() {
-    resetDateHistory(savedDates);
+    resetDateHistory(committedDatesRef.current);
     setIsEditingDates(false);
   }
 
@@ -258,9 +269,15 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }
 
   function handleStartEditingDates() {
-    resetDateHistory(savedDates);
+    resetDateHistory(committedDatesRef.current);
     setIsEditingDates(true);
   }
+
+  useEffect(() => {
+    committedDatesRef.current = initialCommittedDates;
+    setCommittedDates(initialCommittedDates);
+    resetDateHistory(initialCommittedDates);
+  }, [initialCommittedDates, resetDateHistory]);
 
   useEffect(() => {
     if (!datesEditable) {
@@ -658,6 +675,10 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           open={isEditingDates}
           onOpenChange={(open) => {
             if (!open) {
+              if (skipCancelOnCloseRef.current) {
+                skipCancelOnCloseRef.current = false;
+                return;
+              }
               handleCancelDatesEdit();
             }
           }}
