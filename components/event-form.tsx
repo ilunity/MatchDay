@@ -33,9 +33,6 @@ import {
 } from "@/lib/date-presets";
 import {
   dateKey,
-  formatDateDotRu,
-  formatMonthYearRu,
-  formatWeekRangeRu,
   getDefaultMonth,
   getToday,
   normalizeDates,
@@ -125,45 +122,16 @@ type EventFormProps =
   | { mode?: "create" }
   | { mode: "edit"; initial: EventFormInitial; currentUserName?: string };
 
-function getPresetLabel(
-  presetId: DatePresetId,
-  visibleMonth: Date,
-  today: Date
-): string {
-  const monthYear = formatMonthYearRu(visibleMonth);
-  const fromDate = formatDateDotRu(today);
-
-  switch (presetId) {
-    case "allWeekendsOfMonth":
-      return ru.datePresets.allWeekendsOfMonth(monthYear);
-    case "allWeekdaysOfMonth":
-      return ru.datePresets.allWeekdaysOfMonth(monthYear);
-    case "allDaysOfMonth":
-      return ru.datePresets.allDaysOfMonth(monthYear);
-    case "next2Weeks":
-      return ru.datePresets.next2Weeks(fromDate);
-    case "next4Weeks":
-      return ru.datePresets.next4Weeks(fromDate);
-    case "next3Weekends":
-      return ru.datePresets.next3Weekends(fromDate);
-    case "thisWeek":
-      return ru.datePresets.thisWeek(fromDate);
-    case "nextWeek": {
-      const weekDates = computePresetDates("nextWeek", {
-        visibleMonth,
-        today,
-      });
-      if (weekDates.length === 0) {
-        return ru.datePresets.nextWeek(fromDate);
-      }
-      const range = formatWeekRangeRu(
-        weekDates[0]!,
-        weekDates[weekDates.length - 1]!
-      );
-      return ru.datePresets.nextWeek(range);
-    }
-  }
-}
+const DATE_PRESET_LABELS: Record<DatePresetId, string> = {
+  allWeekendsOfMonth: ru.datePresets.allWeekendsOfMonth,
+  allWeekdaysOfMonth: ru.datePresets.allWeekdaysOfMonth,
+  allDaysOfMonth: ru.datePresets.allDaysOfMonth,
+  next2Weeks: ru.datePresets.next2Weeks,
+  next4Weeks: ru.datePresets.next4Weeks,
+  next3Weekends: ru.datePresets.next3Weekends,
+  thisWeek: ru.datePresets.thisWeek,
+  nextWeek: ru.datePresets.nextWeek,
+};
 
 export function EventForm(props: EventFormProps = { mode: "create" }) {
   const isEdit = props.mode === "edit";
@@ -199,15 +167,6 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const hasDateChanges = useMemo(
     () => !dateSetsEqual(selectedDates, savedDates),
     [selectedDates, savedDates]
-  );
-
-  const presetLabels = useMemo(
-    () =>
-      DATE_PRESET_IDS.map((presetId) => ({
-        id: presetId,
-        label: getPresetLabel(presetId, calendarMonth, today),
-      })),
-    [calendarMonth, today]
   );
 
   const setSelectedDates = useCallback((dates: Date[]) => {
@@ -389,82 +348,82 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             : ru.possibleDatesHint}
         </p>
         <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
-          <div className={cn("w-full", isLgUp && "max-w-xl")}>
-            <Calendar
-              size={calendarSize}
-              mode="multiple"
-              selected={selectedDates}
-              onSelect={handleSelectDates}
-              month={calendarMonth}
-              onMonthChange={setCalendarMonth}
-              readOnly={!datesEditable}
-              participantsByDate={initial?.participantsByDate}
-              bestDates={initial?.bestDates}
-              currentUserName={currentUserName}
-              showParticipantTooltip={mode === "edit" && !isEditingDates}
-              numberOfMonths={1}
-              className="w-full"
-            />
-          </div>
-          {datesEditable && (
-            <div className="mt-2 w-full space-y-2 border-t pt-2">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium">
-                  {ru.datePresets.sectionLabel}
-                </span>
-                <TooltipProvider delayDuration={300}>
-                  <div className="flex shrink-0 gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="size-8"
-                          onClick={handleUndo}
-                          disabled={!canUndo}
-                          aria-label={ru.datePresets.undo}
-                        >
-                          <Undo2 className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{ru.datePresets.undo}</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="size-8"
-                          onClick={handleRedo}
-                          disabled={!canRedo}
-                          aria-label={ru.datePresets.redo}
-                        >
-                          <Redo2 className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{ru.datePresets.redo}</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TooltipProvider>
-              </div>
-              <div className="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible">
-                {presetLabels.map(({ id, label }) => (
-                  <Button
-                    key={id}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    onClick={() => handleApplyPreset(id)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
+          <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start">
+            <div className={cn("w-full shrink-0", isLgUp && "max-w-xl")}>
+              <Calendar
+                size={calendarSize}
+                mode="multiple"
+                selected={selectedDates}
+                onSelect={handleSelectDates}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                readOnly={!datesEditable}
+                participantsByDate={initial?.participantsByDate}
+                bestDates={initial?.bestDates}
+                currentUserName={currentUserName}
+                showParticipantTooltip={mode === "edit" && !isEditingDates}
+                numberOfMonths={1}
+                className="w-full"
+              />
             </div>
-          )}
+            {datesEditable && (
+              <div className="flex w-full flex-col gap-2 border-t pt-2 lg:w-auto lg:min-w-[12rem] lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>{ru.datePresets.sectionLabel}</Label>
+                  <TooltipProvider delayDuration={300}>
+                    <div className="flex shrink-0 gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="size-8"
+                            onClick={handleUndo}
+                            disabled={!canUndo}
+                            aria-label={ru.datePresets.undo}
+                          >
+                            <Undo2 className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{ru.datePresets.undo}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="size-8"
+                            onClick={handleRedo}
+                            disabled={!canRedo}
+                            aria-label={ru.datePresets.redo}
+                          >
+                            <Redo2 className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{ru.datePresets.redo}</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </TooltipProvider>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {DATE_PRESET_IDS.map((presetId) => (
+                    <Button
+                      key={presetId}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleApplyPreset(presetId)}
+                    >
+                      {DATE_PRESET_LABELS[presetId]}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           {(mode === "create" && selectedDates.length > 0) ||
           mode === "edit" ? (
             <div className="mt-2 flex w-full flex-wrap gap-2 border-t pt-2">
