@@ -439,6 +439,15 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
 
   const mobileModalDateActionControls = (
     <div className="flex w-full flex-col gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleResetAllDates}
+        className="w-full"
+      >
+        {ru.resetAllDates}
+      </Button>
+      {undoRedoButtons}
       <div className="grid w-full grid-cols-2 gap-2">
         <Button
           type="button"
@@ -457,15 +466,6 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           {ru.cancelEdit}
         </Button>
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={handleResetAllDates}
-        className="w-full"
-      >
-        {ru.resetAllDates}
-      </Button>
-      {undoRedoButtons}
     </div>
   );
 
