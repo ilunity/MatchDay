@@ -27,7 +27,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -285,43 +284,41 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [datesEditable, canUndo, canRedo]);
 
-  const undoRedoToolbar = (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex shrink-0 justify-end gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={handleUndo}
-              disabled={!canUndo}
-              aria-label={ru.datePresets.undo}
-            >
-              <Undo2 className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{ru.datePresets.undo}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="size-8"
-              onClick={handleRedo}
-              disabled={!canRedo}
-              aria-label={ru.datePresets.redo}
-            >
-              <Redo2 className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{ru.datePresets.redo}</TooltipContent>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
+  const undoRedoButtons = (
+    <div className="flex w-full gap-2 sm:w-auto">
+      <Tooltip delayDuration={200}>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-9 flex-1 sm:flex-none"
+            onClick={handleUndo}
+            disabled={!canUndo}
+            aria-label={ru.datePresets.undo}
+          >
+            <Undo2 className="size-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">{ru.datePresets.undo}</TooltipContent>
+      </Tooltip>
+      <Tooltip delayDuration={200}>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-9 flex-1 sm:flex-none"
+            onClick={handleRedo}
+            disabled={!canRedo}
+            aria-label={ru.datePresets.redo}
+          >
+            <Redo2 className="size-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">{ru.datePresets.redo}</TooltipContent>
+      </Tooltip>
+    </div>
   );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -435,7 +432,6 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             {datesEditable && (
               <>
                 <div className="flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
-                  {undoRedoToolbar}
                   <Accordion type="single" collapsible>
                     <AccordionItem value="presets" className="border-none">
                       <AccordionTrigger className="py-2 hover:no-underline">
@@ -476,7 +472,6 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                       </Button>
                     ))}
                   </div>
-                  <div className="shrink-0">{undoRedoToolbar}</div>
                 </div>
               </>
             )}
@@ -485,14 +480,17 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           mode === "edit" ? (
             <div className="mt-2 flex w-full flex-wrap gap-2 border-t pt-2">
               {mode === "create" ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleResetAllDates}
-                  className="w-full sm:w-auto"
-                >
-                  {ru.resetAllDates}
-                </Button>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleResetAllDates}
+                    className="w-full sm:w-auto"
+                  >
+                    {ru.resetAllDates}
+                  </Button>
+                  {undoRedoButtons}
+                </>
               ) : isEditingDates ? (
                 <>
                   <Button
@@ -519,6 +517,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   >
                     {ru.resetAllDates}
                   </Button>
+                  {undoRedoButtons}
                 </>
               ) : (
                 <Button
