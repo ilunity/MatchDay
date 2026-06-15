@@ -48,24 +48,16 @@ export function DateStats({
               return (
                 <li key={stat.date} className="space-y-1">
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <span className="font-medium">
-                      {formatDateShortRu(parseDateKey(stat.date))}
-                    </span>
-                    <div className="flex shrink-0 items-center gap-1">
-                      <span className="text-muted-foreground">
-                        {stat.count}{" "}
-                        {stat.count === 1
-                          ? ru.participant
-                          : stat.count < 5
-                            ? "участника"
-                            : ru.participants}
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium">
+                        {formatDateShortRu(parseDateKey(stat.date))}
                       </span>
                       {onDateClick && (
                         <Tooltip delayDuration={200}>
                           <TooltipTrigger asChild>
                             <Button
                               type="button"
-                              variant="default"
+                              variant="ghost"
                               size="icon"
                               className="size-7"
                               onClick={() => onDateClick(stat.date)}
@@ -80,6 +72,14 @@ export function DateStats({
                         </Tooltip>
                       )}
                     </div>
+                    <span className="shrink-0 text-muted-foreground">
+                      {stat.count}{" "}
+                      {stat.count === 1
+                        ? ru.participant
+                        : stat.count < 5
+                          ? "участника"
+                          : ru.participants}
+                    </span>
                   </div>
                   {stat.participants && stat.participants.length > 0 && (
                     <p className="break-words text-xs text-muted-foreground">
