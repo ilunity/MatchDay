@@ -6,6 +6,10 @@ export const ALLOWED_IMAGE_TYPES = [
 
 export const MAX_COVER_SIZE = 5 * 1024 * 1024;
 
+export const MAX_AVATAR_OUTPUT_WIDTH = 512;
+
+export const AVATAR_ASPECT_RATIO = 1;
+
 export const DEFAULT_COVER_ASPECT_RATIO = 16 / 9;
 
 /** @deprecated Use DEFAULT_COVER_ASPECT_RATIO */

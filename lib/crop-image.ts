@@ -28,10 +28,12 @@ export async function getCroppedImageFile(
   imageSrc: string,
   crop: Area,
   fileName: string,
-  mimeType: string
+  mimeType: string,
+  maxOutputWidth = MAX_OUTPUT_WIDTH
 ): Promise<File> {
   const image = await loadImage(imageSrc);
-  const scale = crop.width > MAX_OUTPUT_WIDTH ? MAX_OUTPUT_WIDTH / crop.width : 1;
+  const scale =
+    crop.width > maxOutputWidth ? maxOutputWidth / crop.width : 1;
   const width = Math.round(crop.width * scale);
   const height = Math.round(crop.height * scale);
 
