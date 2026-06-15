@@ -141,27 +141,40 @@ export function AvatarField({
     <div className="space-y-2">
       <Label htmlFor="avatar">{ru.avatar}</Label>
       {removeAvatar && <input type="hidden" name="removeAvatar" value="on" />}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
         {showUploadedPreview ? (
-          <UserAvatar userId={userId} name={userName} avatarUrl={previewUrl} size={80} />
+          <UserAvatar userId={userId} name={userName} avatarUrl={previewUrl} size={128} />
         ) : (
-          <UserAvatar userId={userId} name={userName} size={80} />
+          <UserAvatar userId={userId} name={userName} size={128} />
         )}
-        <div className="flex flex-col gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={() => inputRef.current?.click()}
           >
             {showUploadedPreview ? ru.changeAvatar : ru.uploadAvatar}
           </Button>
           {showUploadedPreview && (
             <>
-              <Button type="button" variant="outline" size="sm" onClick={handleReposition}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                onClick={handleReposition}
+              >
                 {ru.adjustAvatar}
               </Button>
-              <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="w-full sm:w-auto"
+                onClick={handleRemove}
+              >
                 {ru.removeAvatar}
               </Button>
             </>
