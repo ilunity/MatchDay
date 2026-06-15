@@ -197,7 +197,7 @@ export function EventCoverField({
       <div className="flex w-full flex-col gap-2">
         {showPreview ? (
           <>
-            <div className="grid w-full grid-cols-2 gap-2">
+            <div className="flex w-full flex-col gap-2 sm:grid sm:grid-cols-2">
               <Button
                 type="button"
                 variant="outline"
