@@ -46,12 +46,31 @@ import {
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
 
+function dedupeDatesByKey(dates: Date[]): Date[] {
+  const seen = new Set<string>();
+  const result: Date[] = [];
+  for (const date of dates) {
+    const key = dateKey(date);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(date);
+    }
+  }
+  return result;
+}
+
 function dateSetsEqual(a: Date[], b: Date[]): boolean {
   const keysA = new Set(a.map(dateKey));
-  if (keysA.size !== b.length) {
+  const keysB = new Set(b.map(dateKey));
+  if (keysA.size !== keysB.size) {
     return false;
   }
-  return b.every((date) => keysA.has(dateKey(date)));
+  for (const key of keysA) {
+    if (!keysB.has(key)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 type DateHistoryState = {
@@ -72,7 +91,7 @@ function dateHistoryReducer(
 ): DateHistoryState {
   switch (action.type) {
     case "SET": {
-      const dates = normalizeDates(action.dates);
+      const dates = dedupeDatesByKey(normalizeDates(action.dates));
       if (dateSetsEqual(state.present, dates)) {
         return state;
       }
@@ -202,14 +221,14 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   }
 
   function handleUndo() {
-    if (!datesEditable) {
+    if (!datesEditable || !canUndo) {
       return;
     }
     dispatchDateHistory({ type: "UNDO" });
   }
 
   function handleRedo() {
-    if (!datesEditable) {
+    if (!datesEditable || !canRedo) {
       return;
     }
     dispatchDateHistory({ type: "REDO" });
@@ -249,12 +268,18 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       }
 
       if (event.key === "z" && !event.shiftKey) {
+        if (!canUndo) {
+          return;
+        }
         event.preventDefault();
         dispatchDateHistory({ type: "UNDO" });
         return;
       }
 
       if (event.key === "y" || (event.key === "z" && event.shiftKey)) {
+        if (!canRedo) {
+          return;
+        }
         event.preventDefault();
         dispatchDateHistory({ type: "REDO" });
       }
@@ -262,7 +287,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [datesEditable]);
+  }, [datesEditable, canUndo, canRedo]);
 
   const undoRedoToolbar = (
     <TooltipProvider delayDuration={300}>
