@@ -137,12 +137,12 @@ export function mergeDates(existing: Date[], toAdd: Date[]): Date[] {
 }
 
 export const DATE_PRESET_IDS: DatePresetId[] = [
-  "allWeekendsOfMonth",
-  "allWeekdaysOfMonth",
-  "allDaysOfMonth",
+  "thisWeek",
+  "nextWeek",
   "next2Weeks",
   "next4Weeks",
   "next3Weekends",
-  "thisWeek",
-  "nextWeek",
+  "allWeekendsOfMonth",
+  "allWeekdaysOfMonth",
+  "allDaysOfMonth",
 ];
