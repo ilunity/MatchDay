@@ -491,7 +491,14 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           {(mode === "create" && selectedDates.length > 0) ||
           mode === "edit" ? (
             <div className="mt-2 flex w-full flex-col gap-2 border-t pt-2">
-              <div className="flex w-full flex-wrap items-center gap-2 lg:justify-end">
+              <div
+                className={cn(
+                  "flex w-full flex-wrap items-center gap-2",
+                  mode === "edit" && !isEditingDates
+                    ? "justify-center"
+                    : "lg:justify-end"
+                )}
+              >
                 {mode === "create" ? (
                   <>
                     <Button
@@ -520,7 +527,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   <Button
                     type="button"
                     onClick={handleStartEditingDates}
-                    className="w-full lg:ml-auto lg:w-auto"
+                    className="w-full lg:w-auto"
                   >
                     {selectedDates.length === 0
                       ? ru.startSelectingDates

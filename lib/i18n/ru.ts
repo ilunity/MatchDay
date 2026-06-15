@@ -38,8 +38,8 @@ export const ru = {
   availabilityHint: "Отметьте дни, когда вы можете",
   availabilityViewHint:
     "Наведите на день, чтобы увидеть, кто сможет прийти",
-  startSelectingDates: "Начать выбор дат",
-  changeSelection: "Изменить выбор",
+  startSelectingDates: "Выбрать допустимые даты",
+  changeSelection: "Изменить допустимые даты",
   cancelEdit: "Отмена",
   reset: "Сбросить",
   resetAllDates: "Сбросить все даты",
