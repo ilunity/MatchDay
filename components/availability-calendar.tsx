@@ -149,7 +149,9 @@ export function AvailabilityCalendar({
                     onClick={() => setIsEditing(true)}
                     className="w-full sm:w-auto"
                   >
-                    {ru.markDates}
+                    {initialSelected.length === 0
+                      ? ru.startSelectingDates
+                      : ru.changeSelection}
                   </Button>
                 )}
               </div>
