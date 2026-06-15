@@ -546,8 +546,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                       className="w-full lg:w-auto"
                     >
                       {selectedDates.length === 0
-                        ? ru.startSelectingDates
-                        : ru.changeSelection}
+                        ? ru.selectPossibleDates
+                        : ru.changePossibleDates}
                     </Button>
                   )}
                 </div>
