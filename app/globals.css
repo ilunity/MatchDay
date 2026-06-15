@@ -123,21 +123,57 @@
 
 @keyframes calendar-day-highlight-fade {
   0% {
-    background-color: color-mix(in srgb, var(--primary) 55%, transparent);
-    color: var(--primary-foreground);
-  }
-  35% {
     background-color: var(--primary);
     color: var(--primary-foreground);
   }
+  50% {
+    background-color: color-mix(in srgb, var(--primary) 45%, var(--card));
+    color: var(--primary-foreground);
+  }
   100% {
-    background-color: transparent;
+    background-color: var(--card);
     color: inherit;
+  }
+}
+
+@keyframes calendar-day-highlight-fade-selected {
+  0% {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--primary) 55%, rgb(147 197 253));
+    color: var(--primary-foreground);
+  }
+  100% {
+    background-color: rgb(147 197 253);
+    color: rgb(30 58 138);
   }
 }
 
 .calendar-day-highlight {
   animation: calendar-day-highlight-fade 2s ease-out forwards;
+}
+
+.rdp-selected .calendar-day-highlight {
+  animation-name: calendar-day-highlight-fade-selected;
+}
+
+@media (prefers-color-scheme: dark) {
+  @keyframes calendar-day-highlight-fade-selected {
+    0% {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+    50% {
+      background-color: color-mix(in srgb, var(--primary) 55%, rgb(30 64 175));
+      color: var(--primary-foreground);
+    }
+    100% {
+      background-color: rgb(30 64 175);
+      color: rgb(248 250 252);
+    }
+  }
 }
 
 :root {
