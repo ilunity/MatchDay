@@ -40,6 +40,7 @@ export const ru = {
   startSelectingDates: "Начать выбор дат",
   changeSelection: "Изменить выбор",
   cancelEdit: "Отмена",
+  reset: "Сбросить",
   saveAvailability: "Сохранить",
   availabilitySaved: "Даты сохранены",
   bestDates: "Лучшие даты",

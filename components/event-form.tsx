@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { createEvent, updateEvent } from "@/actions/events";
 import { EventCoverField } from "@/components/event-cover-field";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,9 +11,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { dateKey, getDefaultMonth } from "@/lib/dates";
+import { dateKey, getDefaultMonth, normalizeDates } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
 import { cn } from "@/lib/utils";
+
+function dateSetsEqual(a: Date[], b: Date[]): boolean {
+  const keysA = new Set(a.map(dateKey));
+  if (keysA.size !== b.length) {
+    return false;
+  }
+  return b.every((date) => keysA.has(dateKey(date)));
+}
 
 type EventFormInitial = {
   slug: string;
@@ -33,14 +41,46 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const initial = isEdit ? props.initial : undefined;
   const mode = isEdit ? "edit" : "create";
 
-  const [selectedDates, setSelectedDates] = useState<Date[]>(
-    initial?.possibleDates ?? []
+  const savedDates = useMemo(
+    () => normalizeDates(initial?.possibleDates ?? []),
+    [initial?.possibleDates]
   );
+  const [selectedDates, setSelectedDates] = useState<Date[]>(savedDates);
+  const [isEditingDates, setIsEditingDates] = useState(false);
   const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isLgUp = useMediaQuery("(min-width: 600px)");
   const calendarSize = isLgUp ? "lg" : "sm";
+
+  const hasDateChanges = useMemo(
+    () => !dateSetsEqual(selectedDates, savedDates),
+    [selectedDates, savedDates]
+  );
+
+  function handleSelectDates(dates: Date[] | undefined) {
+    if (mode === "edit" && !isEditingDates) {
+      return;
+    }
+    setSelectedDates(dates ?? []);
+  }
+
+  function handleSaveDatesEdit() {
+    setIsEditingDates(false);
+  }
+
+  function handleCancelDatesEdit() {
+    setSelectedDates(savedDates);
+    setIsEditingDates(false);
+  }
+
+  function handleResetDatesEdit() {
+    setSelectedDates(savedDates);
+  }
+
+  function handleResetDatesCreate() {
+    setSelectedDates([]);
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -125,7 +165,11 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       <div className="space-y-2">
         <Label>{ru.possibleDates}</Label>
         <p className="text-sm text-muted-foreground">
-          {mode === "edit" ? ru.possibleDatesEditHint : ru.possibleDatesHint}
+          {mode === "edit"
+            ? isEditingDates
+              ? ru.possibleDatesEditHint
+              : ru.possibleDatesHint
+            : ru.possibleDatesHint}
         </p>
         <div className="flex w-full flex-col items-center rounded-lg border bg-card p-2">
           <div className={cn("w-full", isLgUp && "max-w-xl")}>
@@ -133,14 +177,69 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
               size={calendarSize}
               mode="multiple"
               selected={selectedDates}
-              onSelect={(dates) => setSelectedDates(dates ?? [])}
+              onSelect={handleSelectDates}
               defaultMonth={getDefaultMonth(
                 selectedDates.length > 0 ? selectedDates : undefined
               )}
+              readOnly={mode === "edit" && !isEditingDates}
               numberOfMonths={1}
               className="w-full"
             />
           </div>
+          {(mode === "create" && selectedDates.length > 0) ||
+          mode === "edit" ? (
+            <div className="mt-2 flex w-full flex-wrap gap-2 border-t pt-2">
+              {mode === "create" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResetDatesCreate}
+                  className="w-full sm:w-auto"
+                >
+                  {ru.reset}
+                </Button>
+              ) : isEditingDates ? (
+                <>
+                  <Button
+                    type="button"
+                    onClick={handleSaveDatesEdit}
+                    disabled={!hasDateChanges}
+                    className="w-full sm:w-auto"
+                  >
+                    {ru.save}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelDatesEdit}
+                    className="w-full sm:w-auto"
+                  >
+                    {ru.cancelEdit}
+                  </Button>
+                  {hasDateChanges && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleResetDatesEdit}
+                      className="w-full sm:w-auto"
+                    >
+                      {ru.reset}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={() => setIsEditingDates(true)}
+                  className="w-full sm:w-auto"
+                >
+                  {selectedDates.length === 0
+                    ? ru.startSelectingDates
+                    : ru.changeSelection}
+                </Button>
+              )}
+            </div>
+          ) : null}
         </div>
         {selectedDates.length === 0 && (
           <p className="text-sm text-destructive">{ru.selectAtLeastOneDate}</p>
