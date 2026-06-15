@@ -74,7 +74,7 @@ export function AvailabilityCalendar({
     highlightTimeoutRef.current = setTimeout(() => {
       setHighlightedDate(null);
       highlightTimeoutRef.current = null;
-    }, 2000);
+    }, 3000);
 
     if (!window.matchMedia("(min-width: 1024px)").matches) {
       calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
