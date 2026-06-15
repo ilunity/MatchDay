@@ -161,7 +161,7 @@ export function AvatarField({
               <Button type="button" variant="outline" size="sm" onClick={handleReposition}>
                 {ru.adjustAvatar}
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={handleRemove}>
+              <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
                 {ru.removeAvatar}
               </Button>
             </>
