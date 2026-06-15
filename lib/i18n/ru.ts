@@ -40,6 +40,7 @@ export const ru = {
     "Наведите на день, чтобы увидеть, кто сможет прийти",
   selectPossibleDates: "Выбрать допустимые даты",
   changePossibleDates: "Изменить допустимые даты",
+  editPossibleDates: "Допустимые даты",
   startSelectingDates: "Начать выбор дат",
   changeSelection: "Изменить выбор",
   cancelEdit: "Отмена",

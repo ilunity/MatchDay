@@ -25,6 +25,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -184,9 +191,11 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   );
 
   const today = useMemo(() => getToday(), []);
+  const isMobileEdit = mode === "edit" && !isLgUp;
   const datesEditable = mode === "create" || isEditingDates;
-  const showDatePresets =
-    mode === "create" || (mode === "edit" && isEditingDates);
+  const showDatePresetsInline =
+    mode === "create" || (mode === "edit" && isEditingDates && isLgUp);
+  const inlineCalendarReadOnly = mode === "edit" && (!isEditingDates || !isLgUp);
   const canUndo = dateHistory.past.length > 0;
   const canRedo = dateHistory.future.length > 0;
 
@@ -321,7 +330,33 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     </div>
   );
 
-  const calendarActionControls = (
+  const datePresetsAccordion = (
+    <Accordion type="single" collapsible>
+      <AccordionItem value="presets" className="border-none">
+        <AccordionTrigger className="py-2 hover:no-underline">
+          {ru.datePresets.sectionLabel}
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="flex flex-col gap-2">
+            {DATE_PRESET_IDS.map((presetId) => (
+              <Button
+                key={presetId}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => handleApplyPreset(presetId)}
+              >
+                {DATE_PRESET_LABELS[presetId]}
+              </Button>
+            ))}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+
+  const desktopCalendarActionControls = (
     <>
       {mode === "edit" && isEditingDates ? (
         <div className="order-2 grid w-full grid-cols-2 gap-2 lg:order-none lg:flex lg:w-auto lg:gap-2">
@@ -377,6 +412,63 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     </>
   );
 
+  const mobileInlineCalendarActionControls =
+    mode === "edit" ? (
+      <Button
+        type="button"
+        onClick={handleStartEditingDates}
+        className="w-full"
+      >
+        {selectedDates.length === 0
+          ? ru.selectPossibleDates
+          : ru.changePossibleDates}
+      </Button>
+    ) : (
+      <>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleResetAllDates}
+          className="w-full"
+        >
+          {ru.resetAllDates}
+        </Button>
+        {undoRedoButtons}
+      </>
+    );
+
+  const mobileModalDateActionControls = (
+    <div className="flex w-full flex-col gap-2">
+      <div className="grid w-full grid-cols-2 gap-2">
+        <Button
+          type="button"
+          onClick={handleSaveDatesEdit}
+          disabled={!hasDateChanges}
+          className="w-full"
+        >
+          {ru.save}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleCancelDatesEdit}
+          className="w-full"
+        >
+          {ru.cancelEdit}
+        </Button>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleResetAllDates}
+        className="w-full"
+      >
+        {ru.resetAllDates}
+      </Button>
+      {undoRedoButtons}
+    </div>
+  );
+
   const calendarActionBarClassName = cn(
     "mt-2 flex w-full flex-col gap-2 border-t pt-2",
     "lg:flex-row lg:items-center lg:gap-2 lg:w-full",
@@ -387,7 +479,10 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         : "lg:justify-end"
   );
 
-  const showCalendarActionBar =
+  const showMobileInlineActionBar =
+    (mode === "create" && selectedDates.length > 0) ||
+    (mode === "edit" && !isEditingDates);
+  const showDesktopActionBar =
     (mode === "create" && selectedDates.length > 0) || mode === "edit";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -483,7 +578,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           <div
             className={cn(
               "flex w-full flex-col gap-4",
-              showDatePresets
+              showDatePresetsInline
                 ? "lg:min-h-0 lg:flex-row lg:items-stretch"
                 : "lg:items-center"
             )}
@@ -491,7 +586,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             <div
               className={cn(
                 "max-lg:order-1 w-full shrink-0 max-w-xl",
-                !showDatePresets && "lg:mx-auto"
+                !showDatePresetsInline && "lg:mx-auto"
               )}
             >
               <Calendar
@@ -501,7 +596,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 onSelect={handleSelectDates}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
-                readOnly={!datesEditable}
+                readOnly={inlineCalendarReadOnly}
                 participantsByDate={initial?.participantsByDate}
                 bestDates={initial?.bestDates}
                 currentUserName={currentUserName}
@@ -510,32 +605,10 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 className="w-full"
               />
             </div>
-            {showDatePresets && (
+            {showDatePresetsInline && (
               <>
                 <div className="max-lg:order-3 flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value="presets" className="border-none">
-                      <AccordionTrigger className="py-2 hover:no-underline">
-                        {ru.datePresets.sectionLabel}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col gap-2">
-                          {DATE_PRESET_IDS.map((presetId) => (
-                            <Button
-                              key={presetId}
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="w-full"
-                              onClick={() => handleApplyPreset(presetId)}
-                            >
-                              {DATE_PRESET_LABELS[presetId]}
-                            </Button>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                  {datePresetsAccordion}
                 </div>
                 <div className="hidden min-w-0 flex-1 flex-col gap-2 self-stretch border-l pl-4 lg:flex lg:min-h-0 lg:w-full">
                   <Label className="shrink-0">{ru.datePresets.sectionLabel}</Label>
@@ -556,20 +629,20 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 </div>
               </>
             )}
-            {showCalendarActionBar ? (
+            {showMobileInlineActionBar ? (
               <div
                 className={cn(
                   calendarActionBarClassName,
                   "max-lg:order-2 lg:hidden"
                 )}
               >
-                {calendarActionControls}
+                {mobileInlineCalendarActionControls}
               </div>
             ) : null}
           </div>
-          {showCalendarActionBar ? (
+          {showDesktopActionBar ? (
             <div className={cn(calendarActionBarClassName, "hidden lg:flex")}>
-              {calendarActionControls}
+              {desktopCalendarActionControls}
             </div>
           ) : null}
         </div>
@@ -579,6 +652,48 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {isMobileEdit ? (
+        <Dialog
+          open={isEditingDates}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleCancelDatesEdit();
+            }
+          }}
+        >
+          <DialogContent
+            className={cn(
+              "flex max-h-[100dvh] w-full max-w-none flex-col gap-0 overflow-hidden p-0",
+              "inset-0 h-[100dvh] translate-x-0 translate-y-0 rounded-none border-0"
+            )}
+          >
+            <DialogHeader className="shrink-0 space-y-1 px-4 pt-4 pr-12 text-left">
+              <DialogTitle>{ru.editPossibleDates}</DialogTitle>
+              <DialogDescription>{ru.possibleDatesEditHint}</DialogDescription>
+            </DialogHeader>
+
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-3">
+              <Calendar
+                size="sm"
+                mode="multiple"
+                selected={selectedDates}
+                onSelect={handleSelectDates}
+                month={calendarMonth}
+                onMonthChange={setCalendarMonth}
+                readOnly={false}
+                numberOfMonths={1}
+                className="w-full"
+              />
+              <div className="border-t pt-2">{datePresetsAccordion}</div>
+            </div>
+
+            <div className="shrink-0 border-t px-4 py-3">
+              {mobileModalDateActionControls}
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button
