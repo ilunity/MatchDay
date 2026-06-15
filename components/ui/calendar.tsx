@@ -41,15 +41,15 @@ const CALENDAR_SIZES = {
   },
   lg: {
     dayCell: "size-full p-0",
-    dayColumn: "h-[71px] p-0",
-    weekdayCell: "h-8 p-0",
-    dayBox: "size-[42px]",
+    dayColumn: "h-[100px] p-0",
+    weekdayCell: "h-10 p-0",
+    dayBox: "size-[72px]",
     gridWidth: "w-[497px]",
     cssVars:
-      "[--rdp-day-height:71px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
-    dayNumber: "text-base",
-    participantCount: "text-xs",
-    weekday: "text-sm",
+      "[--rdp-day-height:100px] [--rdp-weekday-padding:0] [--rdp-weekday-text-align:center]",
+    dayNumber: "text-lg",
+    participantCount: "text-sm",
+    weekday: "text-base",
   },
 } as const;
 
@@ -246,13 +246,30 @@ function createPossibleDatesDropdowns(
   return { MonthsDropdown, YearsDropdown };
 }
 
+function isWeekendWeekday(label: React.ReactNode): boolean {
+  return label === "сб" || label === "вс";
+}
+
+function Weekday({ className, children, ...props }: React.ComponentProps<"th">) {
+  return (
+    <th
+      className={cn(className, isWeekendWeekday(children) && "font-medium text-destructive")}
+      {...props}
+    >
+      {children}
+    </th>
+  );
+}
+
 function createDayCell(dayBox: string) {
   function Day({ children, className, ...props }: React.ComponentProps<"td">) {
     return (
       <td className={className} {...props}>
-        <span className={cn("flex items-center justify-center", dayBox)}>
-          {children}
-        </span>
+        <div className="flex items-center justify-center">
+          <span className={cn("flex items-center justify-center", dayBox)}>
+            {children}
+          </span>
+        </div>
       </td>
     );
   }
@@ -427,6 +444,7 @@ function Calendar({
           ),
         DayButton,
         Day,
+        Weekday,
         ...navButtons,
         ...possibleDatesDropdowns,
         ...components,

@@ -25,8 +25,15 @@
 }
 
 .rdp-day {
-  text-align: center;
+  text-align: center !important;
   height: var(--rdp-day-height);
+}
+
+.rdp-day > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 /* Selected day fill — rdp's `.rdp-day_button { background: none }` overrides Tailwind bg-* */
