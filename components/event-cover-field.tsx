@@ -194,32 +194,52 @@ export function EventCoverField({
           {!compact && <span className="text-xs">{ru.coverHint}</span>}
         </button>
       )}
-      <div className={compact ? "flex flex-col gap-2" : "flex flex-wrap gap-2"}>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => inputRef.current?.click()}
-        >
-          <ImagePlus className="h-4 w-4" />
-          {showPreview ? ru.changeCover : ru.uploadCover}
-        </Button>
-        {showPreview && (
+      <div className="flex w-full flex-col gap-2">
+        {showPreview ? (
           <>
+            <div className="grid w-full grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => inputRef.current?.click()}
+              >
+                <ImagePlus className="h-4 w-4" />
+                {ru.changeCover}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={handleReposition}
+              >
+                <Crop className="h-4 w-4" />
+                {ru.adjustCover}
+              </Button>
+            </div>
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               size="sm"
-              onClick={handleReposition}
+              className="w-full"
+              onClick={handleRemove}
             >
-              <Crop className="h-4 w-4" />
-              {ru.adjustCover}
-            </Button>
-            <Button type="button" variant="destructive" size="sm" onClick={handleRemove}>
               <Trash2 className="h-4 w-4" />
               {ru.removeCover}
             </Button>
           </>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+          >
+            <ImagePlus className="h-4 w-4" />
+            {ru.uploadCover}
+          </Button>
         )}
       </div>
       {compact && (
