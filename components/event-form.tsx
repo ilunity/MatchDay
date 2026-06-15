@@ -10,8 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { dateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import { cn } from "@/lib/utils";
 
 type EventFormInitial = {
   slug: string;
@@ -37,6 +39,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const isEditLgUp = useMediaQuery("(min-width: 580px)");
+  const calendarSize = mode === "edit" && isEditLgUp ? "lg" : "sm";
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -85,21 +89,23 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         />
       </div>
 
-      <div className="max-w-full sm:max-w-md">
-        <EventCoverField compact initialCoverUrl={initial?.coverUrl} />
-      </div>
+      <div className="flex flex-col gap-6 md:flex-row md:items-stretch">
+        <div className="w-full shrink-0 md:max-w-md">
+          <EventCoverField compact initialCoverUrl={initial?.coverUrl} />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">{ru.descriptionLabel}</Label>
-        <Textarea
-          id="description"
-          name="description"
-          placeholder={ru.descriptionPlaceholder}
-          maxLength={2000}
-          defaultValue={initial?.description ?? ""}
-          rows={5}
-          className="min-h-[7rem] resize-y"
-        />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Label htmlFor="description">{ru.descriptionLabel}</Label>
+          <Textarea
+            id="description"
+            name="description"
+            placeholder={ru.descriptionPlaceholder}
+            maxLength={2000}
+            defaultValue={initial?.description ?? ""}
+            rows={5}
+            className="min-h-[7rem] flex-1 resize-y md:min-h-0"
+          />
+        </div>
       </div>
 
       {mode === "create" && (
@@ -121,15 +127,22 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         <p className="text-sm text-muted-foreground">
           {mode === "edit" ? ru.possibleDatesEditHint : ru.possibleDatesHint}
         </p>
-        <div className="rounded-lg border bg-card p-2">
+        <div
+          className={cn(
+            "rounded-lg border bg-card p-2",
+            mode === "edit" && "w-full max-w-full min-[580px]:w-fit"
+          )}
+        >
           <Calendar
-            size="sm"
+            size={calendarSize}
             mode="multiple"
             selected={selectedDates}
             onSelect={(dates) => setSelectedDates(dates ?? [])}
             possibleDates={selectedDates}
             numberOfMonths={1}
-            className="w-full md:mx-auto md:w-fit"
+            className={
+              mode === "edit" ? "w-full min-[580px]:w-fit" : "w-full md:mx-auto md:w-fit"
+            }
           />
         </div>
         {selectedDates.length === 0 && (
