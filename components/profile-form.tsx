@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ru } from "@/lib/i18n/ru";
+import { toast } from "sonner";
 
 type ProfileFormProps = {
   userId: string;
@@ -43,6 +44,7 @@ export function ProfileForm({
       }
 
       await update({ name: result.name, avatarKey: result.avatarKey ?? null });
+      toast.success(ru.profileSaved);
       router.refresh();
     });
   }
