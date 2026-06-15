@@ -36,7 +36,8 @@ export const ru = {
   copied: "Скопировано!",
   yourAvailability: "Удобные для вас даты",
   availabilityHint: "Отметьте дни, когда вы можете",
-  availabilityViewHint: "Наведите на день, чтобы увидеть, кто может",
+  availabilityViewHint:
+    "Наведите на день, чтобы увидеть, кто сможет прийти",
   startSelectingDates: "Начать выбор дат",
   changeSelection: "Изменить выбор",
   cancelEdit: "Отмена",

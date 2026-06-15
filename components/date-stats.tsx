@@ -1,5 +1,6 @@
 import { formatDateShortRu, parseDateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Stat = { date: string; count: number; participants?: string[] };
@@ -7,9 +8,11 @@ type Stat = { date: string; count: number; participants?: string[] };
 export function DateStats({
   stats,
   totalParticipants,
+  currentUserName,
 }: {
   stats: Stat[];
   totalParticipants: number;
+  currentUserName?: string;
 }) {
   const maxCount = stats[0]?.count ?? 0;
 
@@ -17,9 +20,12 @@ export function DateStats({
     <Card className="flex h-full min-h-0 flex-col">
       <CardHeader className="shrink-0">
         <CardTitle className="text-lg">{ru.bestDates}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {ru.bestDatesHint} · {ru.totalParticipants}: {totalParticipants}
-        </p>
+        <div className="space-y-0.5 text-sm text-muted-foreground">
+          <p>{ru.bestDatesHint}</p>
+          <p>
+            {ru.totalParticipants}: {totalParticipants}
+          </p>
+        </div>
       </CardHeader>
       <CardContent className="min-h-0 flex-1 overflow-y-auto">
         {stats.length === 0 ? (
@@ -45,7 +51,23 @@ export function DateStats({
                   </div>
                   {stat.participants && stat.participants.length > 0 && (
                     <p className="break-words text-xs text-muted-foreground">
-                      {stat.participants.join(", ")}
+                      {stat.participants.map((name, i) => {
+                        const isCurrentUser = currentUserName === name;
+                        return (
+                          <span key={name}>
+                            {i > 0 && ", "}
+                            <span
+                              className={cn(
+                                isCurrentUser &&
+                                  "font-medium text-green-600 dark:text-green-400"
+                              )}
+                            >
+                              {name}
+                              {isCurrentUser && ` ${ru.calendarParticipantYou}`}
+                            </span>
+                          </span>
+                        );
+                      })}
                     </p>
                   )}
                   <div className="h-2 overflow-hidden rounded-full bg-muted">

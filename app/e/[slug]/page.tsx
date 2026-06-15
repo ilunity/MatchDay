@@ -102,7 +102,11 @@ export default async function EventPage({ params }: PageProps) {
           currentUserName={currentUserName}
           disabled={calendarDisabled}
           statsAside={
-            <DateStats stats={stats} totalParticipants={totalParticipants} />
+            <DateStats
+              stats={stats}
+              totalParticipants={totalParticipants}
+              currentUserName={currentUserName}
+            />
           }
         />
       </div>
