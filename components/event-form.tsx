@@ -490,28 +490,45 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           </div>
           {(mode === "create" && selectedDates.length > 0) ||
           mode === "edit" ? (
-            <div className="mt-2 flex w-full flex-col gap-2 border-t pt-2">
+            <div
+              className={cn(
+                "mt-2 flex w-full flex-col gap-2 border-t pt-2",
+                "lg:flex-row lg:items-center lg:gap-2 lg:w-full",
+                mode === "edit" && !isEditingDates
+                  ? "lg:justify-center"
+                  : mode === "edit" && isEditingDates
+                    ? "lg:justify-between"
+                    : "lg:justify-end"
+              )}
+            >
+              {mode === "edit" && isEditingDates ? (
+                <div className="order-2 grid w-full grid-cols-2 gap-2 lg:order-none lg:flex lg:w-auto lg:gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleSaveDatesEdit}
+                    disabled={!hasDateChanges}
+                    className="w-full lg:w-auto"
+                  >
+                    {ru.save}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelDatesEdit}
+                    className="w-full lg:w-auto"
+                  >
+                    {ru.cancelEdit}
+                  </Button>
+                </div>
+              ) : null}
               <div
                 className={cn(
-                  "flex w-full flex-wrap items-center gap-2",
-                  mode === "edit" && !isEditingDates
-                    ? "justify-center"
-                    : "lg:justify-end"
+                  "order-1 flex w-full flex-wrap items-center gap-2",
+                  "lg:order-none lg:w-auto lg:flex-nowrap",
+                  mode === "edit" && !isEditingDates && "justify-center"
                 )}
               >
-                {mode === "create" ? (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleResetAllDates}
-                      className="w-full lg:w-auto"
-                    >
-                      {ru.resetAllDates}
-                    </Button>
-                    {undoRedoButtons}
-                  </>
-                ) : isEditingDates ? (
+                {mode === "create" || isEditingDates ? (
                   <>
                     <Button
                       type="button"
@@ -535,26 +552,6 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                   </Button>
                 )}
               </div>
-              {mode === "edit" && isEditingDates ? (
-                <div className="grid w-full grid-cols-2 gap-2 lg:flex lg:justify-end">
-                  <Button
-                    type="button"
-                    onClick={handleSaveDatesEdit}
-                    disabled={!hasDateChanges}
-                    className="w-full lg:w-auto"
-                  >
-                    {ru.save}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancelDatesEdit}
-                    className="w-full lg:w-auto"
-                  >
-                    {ru.cancelEdit}
-                  </Button>
-                </div>
-              ) : null}
             </div>
           ) : null}
         </div>
