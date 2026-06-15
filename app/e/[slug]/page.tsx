@@ -83,10 +83,12 @@ export default async function EventPage({ params }: PageProps) {
           }
         />
 
-        <div className="mt-8 space-y-2">
-          <h2 className="text-sm font-medium">{ru.shareLink}</h2>
-          <ShareLink url={shareUrl} />
-        </div>
+        {isOwner && (
+          <div className="mt-8 space-y-2">
+            <h2 className="text-sm font-medium">{ru.shareLink}</h2>
+            <ShareLink url={shareUrl} />
+          </div>
+        )}
       </div>
 
       <div className="container max-w-4xl px-4 pb-6 md:pb-8 mt-6 md:mt-10">
