@@ -1,4 +1,0 @@
-{
-  "schemaVersion": 2,
-  "dockerComposeFile": "./docker-compose.yml"
-}

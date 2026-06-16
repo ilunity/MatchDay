@@ -8,7 +8,7 @@
 - MongoDB + Mongoose
 - Auth.js v5 (magic link через SMTP)
 - MinIO (обложки мероприятий)
-- Docker Compose + CapRover
+- Docker Compose
 
 ## Быстрый старт (локально)
 
@@ -35,7 +35,7 @@ npm run dev
 
 ## Деплой
 
-См. [DEPLOY.md](./DEPLOY.md) — инструкция для CapRover.
+См. [DEPLOY.md](./DEPLOY.md) — деплой на VPS через Docker Compose.
 
 ## Структура
 
