@@ -44,6 +44,11 @@ export const ru = {
   startSelectingDates: "Начать выбор дат",
   changeSelection: "Изменить выбор",
   cancelEdit: "Отмена",
+  unsavedChangesTitle: "Несохранённые изменения",
+  unsavedChangesDescription:
+    "Вы изменили выбор дат, но не сохранили. Если выйти сейчас, изменения пропадут.",
+  unsavedChangesLeave: "Выйти без сохранения",
+  unsavedChangesStay: "Продолжить редактирование",
   reset: "Сбросить",
   resetAllDates: "Сбросить все даты",
   datePresets: {

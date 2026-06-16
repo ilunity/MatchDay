@@ -350,7 +350,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const datePresetsAccordion = (
     <Accordion type="single" collapsible>
       <AccordionItem value="presets" className="border-none">
-        <AccordionTrigger className="py-2 hover:no-underline">
+        <AccordionTrigger className="py-3 hover:no-underline">
           {ru.datePresets.sectionLabel}
         </AccordionTrigger>
         <AccordionContent>
@@ -624,11 +624,11 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             </div>
             {showDatePresetsInline && (
               <>
-                <div className="max-lg:order-3 flex w-full flex-col gap-2 border-t pt-2 lg:hidden">
+                <div className="max-lg:order-3 flex w-full flex-col gap-2 border-t pt-3 lg:hidden">
                   {datePresetsAccordion}
                 </div>
                 <div className="hidden min-w-0 flex-1 flex-col gap-2 self-stretch border-l pl-4 lg:flex lg:min-h-0 lg:w-full">
-                  <Label className="shrink-0">{ru.datePresets.sectionLabel}</Label>
+                  <Label className="shrink-0 py-2">{ru.datePresets.sectionLabel}</Label>
                   <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
                     {DATE_PRESET_IDS.map((presetId) => (
                       <Button
@@ -706,10 +706,10 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
                 numberOfMonths={1}
                 className="w-full"
               />
-              <div className="border-t pt-2">{datePresetsAccordion}</div>
+              <div className="border-t pt-3">{datePresetsAccordion}</div>
             </div>
 
-            <div className="shrink-0 border-t px-4 py-3">
+            <div className="shrink-0 border-t px-4 pt-3 pb-6">
               {mobileModalDateActionControls}
             </div>
           </DialogContent>

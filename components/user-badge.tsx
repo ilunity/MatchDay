@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { useUnsavedChanges } from "@/components/unsaved-changes-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,13 @@ type UserBadgeProps = {
 
 export function UserBadge({ userId, initialName, avatarUrl }: UserBadgeProps) {
   const displayName = initialName?.trim() || ru.setYourName;
+  const { confirmIfNeeded } = useUnsavedChanges();
+
+  async function handleLogout() {
+    if (await confirmIfNeeded()) {
+      signOut({ redirectTo: "/" });
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -56,7 +64,10 @@ export function UserBadge({ userId, initialName, avatarUrl }: UserBadgeProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
-          onSelect={() => signOut({ redirectTo: "/" })}
+          onSelect={(event) => {
+            event.preventDefault();
+            void handleLogout();
+          }}
         >
           <LogOut className="mr-2 h-4 w-4" />
           {ru.logout}

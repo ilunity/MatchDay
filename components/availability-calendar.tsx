@@ -5,6 +5,7 @@ import { setAvailability } from "@/actions/availability";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Calendar } from "@/components/ui/calendar";
 import { DateStats } from "@/components/date-stats";
+import { useUnsavedChanges } from "@/components/unsaved-changes-provider";
 import { Button } from "@/components/ui/button";
 import { dateKey, getDefaultMonth, normalizeDates, parseDateKey } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
@@ -53,6 +54,7 @@ export function AvailabilityCalendar({
   const [highlightKey, setHighlightKey] = useState(0);
   const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+  const { setHasUnsavedChanges } = useUnsavedChanges();
 
   useEffect(() => {
     return () => {
@@ -89,6 +91,13 @@ export function AvailabilityCalendar({
     () => !dateSetsEqual(selected, initialSelected),
     [selected, initialSelected]
   );
+
+  const hasUnsavedEdits = isEditing && hasChanges;
+
+  useEffect(() => {
+    setHasUnsavedChanges(hasUnsavedEdits);
+    return () => setHasUnsavedChanges(false);
+  }, [hasUnsavedEdits, setHasUnsavedChanges]);
 
   function handleSelect(dates: Date[] | undefined) {
     if (!isEditing) {
@@ -160,41 +169,41 @@ export function AvailabilityCalendar({
                 numberOfMonths={1}
                 className="w-full"
               />
-            </div>
-            {!disabled && (
-              <div className="mt-2 border-t pt-2">
-                {isEditing ? (
-                  <div className="grid w-full grid-cols-2 gap-2">
-                    <Button
-                      onClick={handleSave}
-                      disabled={pending || !hasChanges}
-                      className="w-full"
-                    >
-                      {pending ? ru.loading : ru.saveAvailability}
-                    </Button>
+              {!disabled && (
+                <div className="mt-2 w-full border-t pt-2">
+                  {isEditing ? (
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        onClick={handleSave}
+                        disabled={pending || !hasChanges}
+                        className="w-full min-w-0"
+                      >
+                        {pending ? ru.loading : ru.saveAvailability}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                        disabled={pending}
+                        className="w-full min-w-0"
+                      >
+                        {ru.cancelEdit}
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={handleCancelEdit}
-                      disabled={pending}
-                      className="w-full"
+                      onClick={() => setIsEditing(true)}
+                      className="w-full sm:w-auto"
                     >
-                      {ru.cancelEdit}
+                      {initialSelected.length === 0
+                        ? ru.startSelectingDates
+                        : ru.changeSelection}
                     </Button>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={() => setIsEditing(true)}
-                    className="w-full sm:w-auto"
-                  >
-                    {initialSelected.length === 0
-                      ? ru.startSelectingDates
-                      : ru.changeSelection}
-                  </Button>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {stats && totalParticipants !== undefined && (
