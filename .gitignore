@@ -15,6 +15,7 @@ uploads/
 # misc
 .DS_Store
 .idea/
+tsconfig.tsbuildinfo
 
 # docker volumes
 mongodb_data/
