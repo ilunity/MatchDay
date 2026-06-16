@@ -48,7 +48,7 @@ export function DateStats({
               return (
                 <li key={stat.date} className="space-y-1">
                   <div className="flex items-center justify-between gap-2 text-sm">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <span className="font-medium">
                         {formatDateShortRu(parseDateKey(stat.date))}
                       </span>
@@ -57,13 +57,13 @@ export function DateStats({
                           <TooltipTrigger asChild>
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="secondary"
                               size="icon"
-                              className="size-7"
+                              className="size-8 shrink-0"
                               onClick={() => onDateClick(stat.date)}
                               aria-label={ru.showDateInCalendar}
                             >
-                              <CalendarDays className="size-4" />
+                              <CalendarDays className="size-4 text-primary" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top">
