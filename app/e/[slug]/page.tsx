@@ -1,11 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getEventStats } from "@/actions/events";
+import { getEventBySlug, getEventStats } from "@/actions/events";
 import { getUserAvailability } from "@/actions/availability";
 import { auth } from "@/lib/auth";
 import { getGuestId, getGuestName } from "@/lib/guest";
 import { normalizeDates } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import {
+  absoluteUrl,
+  buildEventOgImages,
+  defaultOpenGraph,
+  defaultTwitter,
+  getOgImageUrls,
+  truncateDescription,
+} from "@/lib/metadata";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { CompleteProfileForm } from "@/components/complete-profile-form";
 import { EventHeader } from "@/components/event-header";
@@ -16,6 +25,44 @@ import { Button } from "@/components/ui/button";
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const event = await getEventBySlug(slug);
+
+  if (!event) {
+    return { title: ru.eventNotFound };
+  }
+
+  const title = event.title;
+  const description = event.description?.trim()
+    ? truncateDescription(event.description)
+    : ru.og.eventDescriptionFallback(event.title);
+  const images = buildEventOgImages({
+    slug,
+    title,
+    description: event.description,
+  });
+  const imageUrls = getOgImageUrls(images);
+
+  return {
+    title,
+    description,
+    openGraph: {
+      ...defaultOpenGraph,
+      title,
+      description,
+      url: absoluteUrl(`/e/${slug}`),
+      images,
+    },
+    twitter: {
+      ...defaultTwitter,
+      title,
+      description,
+      images: imageUrls,
+    },
+  };
+}
 
 export default async function EventPage({ params }: PageProps) {
   const { slug } = await params;

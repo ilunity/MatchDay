@@ -162,6 +162,14 @@ export const ru = {
     results: "Наглядные результаты",
     resultsDesc: "Сортировка дат по количеству доступных участников",
   },
+  og: {
+    homeDescription:
+      "Найдите идеальную дату для встречи. Создайте событие за минуту и поделитесь ссылкой.",
+    homeImageAlt: "MatchDay — согласование даты встречи",
+    eventImageAlt: (title: string) => `Мероприятие «${title}»`,
+    eventDescriptionFallback: (title: string) =>
+      `Отметьте удобные даты для «${title}» — MatchDay покажет, когда смогут больше всего участников.`,
+  },
 } as const;
 
 export type RuStrings = typeof ru;

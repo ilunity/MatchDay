@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { Providers } from "@/components/providers";
-import { ru } from "@/lib/i18n/ru";
+import { defaultMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,10 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: ru.appName,
-  description: ru.description,
-};
+export const metadata = defaultMetadata;
 
 export default function RootLayout({
   children,

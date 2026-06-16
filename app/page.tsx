@@ -1,9 +1,31 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BarChart3, CalendarPlus, LayoutDashboard, Link2 } from "lucide-react";
 import { FeatureCard } from "@/components/feature-card";
 import { auth } from "@/lib/auth";
 import { ru } from "@/lib/i18n/ru";
+import {
+  absoluteUrl,
+  defaultOpenGraph,
+  defaultTwitter,
+} from "@/lib/metadata";
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: ru.appName,
+  description: ru.og.homeDescription,
+  openGraph: {
+    ...defaultOpenGraph,
+    title: ru.appName,
+    description: ru.og.homeDescription,
+    url: absoluteUrl("/"),
+  },
+  twitter: {
+    ...defaultTwitter,
+    title: ru.appName,
+    description: ru.og.homeDescription,
+  },
+};
 
 export default async function HomePage() {
   const session = await auth();
