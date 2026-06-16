@@ -162,13 +162,13 @@ export function AvailabilityCalendar({
               />
             </div>
             {!disabled && (
-              <div className="mt-2 flex flex-wrap gap-2 border-t pt-2">
+              <div className="mt-2 border-t pt-2">
                 {isEditing ? (
-                  <>
+                  <div className="grid w-full grid-cols-2 gap-2">
                     <Button
                       onClick={handleSave}
                       disabled={pending || !hasChanges}
-                      className="w-full sm:w-auto"
+                      className="w-full"
                     >
                       {pending ? ru.loading : ru.saveAvailability}
                     </Button>
@@ -177,11 +177,11 @@ export function AvailabilityCalendar({
                       variant="outline"
                       onClick={handleCancelEdit}
                       disabled={pending}
-                      className="w-full sm:w-auto"
+                      className="w-full"
                     >
                       {ru.cancelEdit}
                     </Button>
-                  </>
+                  </div>
                 ) : (
                   <Button
                     type="button"
