@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,11 +52,19 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{sent ? ru.magicLinkSent : ru.login}</CardTitle>
-          <CardDescription>
-            {sent ? ru.checkEmail : ru.loginDescription}
-          </CardDescription>
+          {!sent && <CardDescription>{ru.loginDescription}</CardDescription>}
         </CardHeader>
-        {!sent && (
+        {sent ? (
+          <CardContent>
+            <div className="flex gap-3 rounded-lg border border-border/80 bg-muted/50 px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+              <Info
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                aria-hidden
+              />
+              <p>{ru.checkEmail}</p>
+            </div>
+          </CardContent>
+        ) : (
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
