@@ -11,6 +11,7 @@ import {
 } from "@/lib/email";
 import { buildMagicLinkVerifyUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
+import { SmtpSendError } from "@/lib/smtp-send-error";
 import { User } from "@/models/User";
 
 function emailFromAddress(): string {
@@ -61,7 +62,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return;
         }
 
-        await sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
+        try {
+          await sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
+        } catch {
+          throw new SmtpSendError();
+        }
       },
     }),
   ],

@@ -13,7 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
 import { ru } from "@/lib/i18n/ru";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -35,7 +37,9 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        setError(ru.errorGeneric);
+        const message = getAuthErrorMessage(result.error, result.code);
+        setError(message);
+        toast.error(message);
       } else {
         setSent(true);
       }
@@ -46,17 +50,13 @@ export function LoginForm() {
     <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{ru.login}</CardTitle>
+          <CardTitle>{sent ? ru.magicLinkSent : ru.login}</CardTitle>
           <CardDescription>
-            {sent ? ru.magicLinkSent : ru.loginDescription}
+            {sent ? ru.checkEmail : ru.loginDescription}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          {sent ? (
-            <p className="text-center text-sm text-muted-foreground">
-              {ru.checkEmail}
-            </p>
-          ) : (
+        {!sent && (
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">{ru.email}</Label>
@@ -75,8 +75,8 @@ export function LoginForm() {
                 {pending ? ru.loading : ru.sendMagicLink}
               </Button>
             </form>
-          )}
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
     </div>
   );

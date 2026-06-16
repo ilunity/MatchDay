@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/card";
 
 type PageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; code?: string }>;
 };
 
 export default async function AuthErrorPage({ searchParams }: PageProps) {
-  const { error } = await searchParams;
-  const message = getAuthErrorMessage(error);
+  const { error, code } = await searchParams;
+  const message = getAuthErrorMessage(error, code);
 
   return (
     <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
