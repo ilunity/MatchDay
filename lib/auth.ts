@@ -52,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ? { host: "localhost", port: 25, secure: false }
         : getSmtpServerConfig(),
       from: emailFromAddress(),
-      sendVerificationRequest({ identifier, url, provider }) {
+      async sendVerificationRequest({ identifier, url, provider }) {
         const from = provider.from ?? emailFromAddress();
         const verifyUrl = buildMagicLinkVerifyUrl(url);
 
@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return;
         }
 
-        return sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
+        await sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
       },
     }),
   ],

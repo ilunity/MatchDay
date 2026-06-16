@@ -45,6 +45,33 @@ function getSmtpTransport(): Transporter {
   return createTransport(getSmtpServerConfig());
 }
 
+function logSmtpError(
+  error: unknown,
+  context: { to: string; from: string }
+): void {
+  const config = getSmtpServerConfig();
+  const err = error as {
+    code?: string;
+    response?: string;
+    responseCode?: number;
+    command?: string;
+  };
+
+  console.error("[smtp] send failed", {
+    to: context.to,
+    from: context.from,
+    host: config.host ?? "(missing)",
+    port: config.port,
+    user: config.auth.user ?? "(missing)",
+    password: config.auth.pass ? "(set)" : "(missing)",
+    code: err.code,
+    response: err.response,
+    responseCode: err.responseCode,
+    command: err.command,
+    message: error instanceof Error ? error.message : String(error),
+  });
+}
+
 function buildMagicLinkEmailHtml(url: string): string {
   const buttonGradient =
     "linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%)";
@@ -112,7 +139,7 @@ export async function sendMagicLinkEmail({
       html: buildMagicLinkEmailHtml(url),
     });
   } catch (error) {
-    console.error("SMTP send failed:", error);
+    logSmtpError(error, { to, from });
     throw error;
   }
 }
