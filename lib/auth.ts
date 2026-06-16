@@ -13,8 +13,9 @@ import { buildMagicLinkVerifyUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
 import { User } from "@/models/User";
 
-const consoleEmail = isConsoleEmail();
-const emailFrom = process.env.SMTP_FROM ?? "noreply@localhost";
+function emailFromAddress(): string {
+  return process.env["SMTP_FROM"] ?? "noreply@localhost";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -47,15 +48,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   providers: [
     Nodemailer({
-      server: consoleEmail
+      server: isConsoleEmail()
         ? { host: "localhost", port: 25, secure: false }
         : getSmtpServerConfig(),
-      from: emailFrom,
+      from: emailFromAddress(),
       sendVerificationRequest({ identifier, url, provider }) {
-        const from = provider.from ?? emailFrom;
+        const from = provider.from ?? emailFromAddress();
         const verifyUrl = buildMagicLinkVerifyUrl(url);
 
-        if (consoleEmail) {
+        if (isConsoleEmail()) {
           logMagicLinkToConsole({ to: identifier, url: verifyUrl, from });
           return;
         }

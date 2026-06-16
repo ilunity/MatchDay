@@ -1,8 +1,9 @@
+function env(name: string): string | undefined {
+  return process.env[name];
+}
+
 export function getAppUrl(): string {
-  return (process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000").replace(
-    /\/$/,
-    ""
-  );
+  return (env("APP_URL") ?? env("NEXTAUTH_URL") ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
 export function buildMagicLinkVerifyUrl(callbackUrl: string): string {

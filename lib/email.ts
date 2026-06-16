@@ -1,8 +1,12 @@
 import { createTransport, type Transporter } from "nodemailer";
 import { ru } from "@/lib/i18n/ru";
 
+function env(name: string): string | undefined {
+  return process.env[name];
+}
+
 export function isConsoleEmail(): boolean {
-  return process.env.SMTP_CONSOLE === "true";
+  return env("SMTP_CONSOLE") === "true";
 }
 
 export function logMagicLinkToConsole({
@@ -24,15 +28,15 @@ export function logMagicLinkToConsole({
 }
 
 export function getSmtpServerConfig() {
-  const port = Number(process.env.SMTP_PORT ?? 587);
+  const port = Number(env("SMTP_PORT") ?? 587);
   return {
-    host: process.env.SMTP_HOST,
+    host: env("SMTP_HOST"),
     port,
     secure: port === 465,
     requireTLS: port === 587,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      user: env("SMTP_USER"),
+      pass: env("SMTP_PASSWORD"),
     },
   };
 }
