@@ -4,12 +4,14 @@ import Nodemailer from "next-auth/providers/nodemailer";
 import { authConfig } from "@/lib/auth.config";
 import { connectDB } from "@/lib/db";
 import {
+  getSmtpConfigSnapshot,
   getSmtpServerConfig,
   isConsoleEmail,
   logMagicLinkToConsole,
+  logSmtpEvent,
   sendMagicLinkEmail,
 } from "@/lib/email";
-import { buildMagicLinkVerifyUrl } from "@/lib/magic-link";
+import { buildMagicLinkVerifyUrl, getAppUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
 import { SmtpSendError } from "@/lib/smtp-send-error";
 import { User } from "@/models/User";
@@ -56,15 +58,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async sendVerificationRequest({ identifier, url, provider }) {
         const from = provider.from ?? emailFromAddress();
         const verifyUrl = buildMagicLinkVerifyUrl(url);
+        const mode = isConsoleEmail() ? "console" : "smtp";
+
+        logSmtpEvent("info", "verification.request", {
+          to: identifier,
+          from,
+          mode,
+          appUrl: getAppUrl(),
+          config: getSmtpConfigSnapshot(),
+        });
 
         if (isConsoleEmail()) {
           logMagicLinkToConsole({ to: identifier, url: verifyUrl, from });
+          logSmtpEvent("info", "verification.console", { to: identifier });
           return;
         }
 
         try {
           await sendMagicLinkEmail({ to: identifier, url: verifyUrl, from });
-        } catch {
+          logSmtpEvent("info", "verification.complete", { to: identifier, mode });
+        } catch (error) {
+          logSmtpEvent("error", "verification.failed", {
+            to: identifier,
+            from,
+            mode,
+            message: error instanceof Error ? error.message : String(error),
+          });
           throw new SmtpSendError();
         }
       },

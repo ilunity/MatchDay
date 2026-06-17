@@ -16,6 +16,7 @@ services:
       APP_URL: ${APP_URL:-http://localhost:3000}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:3000/api/storage}
       SMTP_CONSOLE: ${SMTP_CONSOLE:-true}
+      SMTP_LOG: ${SMTP_LOG:-true}
 
   mongodb:
     ports:

@@ -57,6 +57,7 @@ MINIO_USE_SSL=false
 MINIO_PUBLIC_URL=https://matchday.example.com/api/storage
 
 SMTP_CONSOLE=false
+SMTP_LOG=false
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=noreply@example.com
@@ -137,7 +138,7 @@ MinIO Console: http://localhost:9001
 
 | Проблема | Решение |
 |----------|---------|
-| Magic link не приходит | Проверьте `SMTP_*` в `.env` на сервере, `docker compose logs -f app` — ищите `SMTP send failed:` |
+| Magic link не приходит | Проверьте `SMTP_*` в `.env`, включите `SMTP_LOG=true` и смотрите `docker compose logs -f app \| grep '\[smtp\]'` |
 | SMTP работает локально, но не на VPS | Сравните `printenv \| grep SMTP` в контейнере с локальным `.env`; проверьте исходящий порт 587/465 (`nc -zv smtp.host 587`) |
 | 500 при загрузке обложки | Проверьте MINIO_* env, что minio-init отработал |
 | Redirect loop на login | `NEXTAUTH_URL` должен совпадать с доменом |

@@ -15,7 +15,7 @@
 ```bash
 cp .env.example .env
 # Заполните NEXTAUTH_SECRET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
-# SMTP_CONSOLE=true по умолчанию в docker-compose.local.yml — magic link в логах контейнера app
+# SMTP_CONSOLE=true и SMTP_LOG=true по умолчанию в docker-compose.local.yml — magic link в логах app
 
 docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 ```

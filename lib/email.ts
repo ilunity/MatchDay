@@ -1,12 +1,61 @@
-import { createTransport, type Transporter } from "nodemailer";
+import {
+  createTransport,
+  type SentMessageInfo,
+  type Transporter,
+} from "nodemailer";
 import { ru } from "@/lib/i18n/ru";
 
 function env(name: string): string | undefined {
   return process.env[name];
 }
 
+type SmtpLogLevel = "info" | "error";
+
 export function isConsoleEmail(): boolean {
   return env("SMTP_CONSOLE") === "true";
+}
+
+export function isSmtpLogEnabled(): boolean {
+  return env("SMTP_LOG") === "true";
+}
+
+function logSmtp(
+  level: SmtpLogLevel,
+  event: string,
+  data: Record<string, unknown> = {}
+): void {
+  if (!isSmtpLogEnabled()) {
+    return;
+  }
+
+  const payload = { event, ...data };
+  if (level === "error") {
+    console.error("[smtp]", payload);
+    return;
+  }
+  console.log("[smtp]", payload);
+}
+
+export function logSmtpEvent(
+  level: SmtpLogLevel,
+  event: string,
+  data: Record<string, unknown> = {}
+): void {
+  logSmtp(level, event, data);
+}
+
+export function getSmtpConfigSnapshot() {
+  const config = getSmtpServerConfig();
+  return {
+    host: config.host ?? "(missing)",
+    port: config.port,
+    secure: config.secure,
+    requireTLS: config.requireTLS,
+    user: config.auth.user ?? "(missing)",
+    password: config.auth.pass ? "(set)" : "(missing)",
+    from: env("SMTP_FROM") ?? "(missing)",
+    consoleMode: isConsoleEmail(),
+  };
 }
 
 export function logMagicLinkToConsole({
@@ -18,13 +67,7 @@ export function logMagicLinkToConsole({
   url: string;
   from: string;
 }): void {
-  const line = "=".repeat(60);
-  console.log(`\n${line}`);
-  console.log("MatchDay — ссылка для входа (SMTP_CONSOLE=true)");
-  console.log(`Кому:   ${to}`);
-  console.log(`От:     ${from}`);
-  console.log(`Ссылка: ${url}`);
-  console.log(`${line}\n`);
+  logSmtp("info", "console.link", { to, from, url });
 }
 
 export function getSmtpServerConfig() {
@@ -45,11 +88,29 @@ function getSmtpTransport(): Transporter {
   return createTransport(getSmtpServerConfig());
 }
 
-function logSmtpError(
-  error: unknown,
-  context: { to: string; from: string }
+function logSendSuccess(
+  context: { to: string; from: string; subject: string },
+  result: SentMessageInfo,
+  durationMs: number
 ): void {
-  const config = getSmtpServerConfig();
+  logSmtp("info", "send.success", {
+    to: context.to,
+    from: context.from,
+    subject: context.subject,
+    durationMs,
+    messageId: result.messageId ?? null,
+    response: result.response ?? null,
+    accepted: result.accepted ?? [],
+    rejected: result.rejected ?? [],
+    envelope: result.envelope ?? null,
+  });
+}
+
+function logSendError(
+  error: unknown,
+  context: { to: string; from: string; subject: string },
+  durationMs: number
+): void {
   const err = error as {
     code?: string;
     response?: string;
@@ -57,17 +118,16 @@ function logSmtpError(
     command?: string;
   };
 
-  console.error("[smtp] send failed", {
+  logSmtp("error", "send.failed", {
     to: context.to,
     from: context.from,
-    host: config.host ?? "(missing)",
-    port: config.port,
-    user: config.auth.user ?? "(missing)",
-    password: config.auth.pass ? "(set)" : "(missing)",
-    code: err.code,
-    response: err.response,
-    responseCode: err.responseCode,
-    command: err.command,
+    subject: context.subject,
+    durationMs,
+    config: getSmtpConfigSnapshot(),
+    code: err.code ?? null,
+    response: err.response ?? null,
+    responseCode: err.responseCode ?? null,
+    command: err.command ?? null,
     message: error instanceof Error ? error.message : String(error),
   });
 }
@@ -127,19 +187,30 @@ export async function sendMagicLinkEmail({
   url: string;
   from: string;
 }): Promise<void> {
+  const subject = ru.magicLinkEmailSubject;
+  const context = { to, from, subject };
+  const startedAt = Date.now();
+
+  logSmtp("info", "send.start", {
+    ...context,
+    config: getSmtpConfigSnapshot(),
+    verifyPath: "/login/verify",
+  });
+
   const transport = getSmtpTransport();
   const text = ru.magicLinkEmailText(url);
 
   try {
-    await transport.sendMail({
+    const result = await transport.sendMail({
       to,
       from,
-      subject: ru.magicLinkEmailSubject,
+      subject,
       text,
       html: buildMagicLinkEmailHtml(url),
     });
+    logSendSuccess(context, result, Date.now() - startedAt);
   } catch (error) {
-    logSmtpError(error, { to, from });
+    logSendError(error, context, Date.now() - startedAt);
     throw error;
   }
 }
