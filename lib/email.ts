@@ -67,7 +67,13 @@ export function logMagicLinkToConsole({
   url: string;
   from: string;
 }): void {
-  logSmtp("info", "console.link", { to, from, url });
+  const line = "=".repeat(60);
+  console.log(`\n${line}`);
+  console.log("MatchDay — ссылка для входа (SMTP_CONSOLE=true)");
+  console.log(`Кому:   ${to}`);
+  console.log(`От:     ${from}`);
+  console.log(`Ссылка: ${url}`);
+  console.log(`${line}\n`);
 }
 
 export function getSmtpServerConfig() {
