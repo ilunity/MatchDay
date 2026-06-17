@@ -383,7 +383,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
             disabled={!hasDateChanges}
             className="w-full lg:w-auto"
           >
-            {ru.save}
+            {ru.saveDates}
           </Button>
           <Button
             type="button"
@@ -472,7 +472,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           disabled={!hasDateChanges}
           className="w-full"
         >
-          {ru.save}
+          {ru.saveDates}
         </Button>
         <Button
           type="button"
@@ -722,11 +722,15 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           disabled={pending || selectedDates.length === 0}
           className="w-full sm:w-auto"
         >
-          {pending ? ru.loading : mode === "edit" ? ru.save : ru.create}
+          {pending ? ru.loading : ru.saveEvent}
         </Button>
-        {mode === "edit" && initial && (
+        {mode === "edit" && initial ? (
           <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={`/e/${initial.slug}`}>{ru.cancel}</Link>
+            <Link href={`/e/${initial.slug}`}>{ru.cancelEditEvent}</Link>
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+            <Link href="/dashboard">{ru.cancelCreateEvent}</Link>
           </Button>
         )}
       </div>
