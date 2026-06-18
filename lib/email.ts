@@ -188,10 +188,12 @@ export async function sendMagicLinkEmail({
   to,
   url,
   from,
+  plain = false,
 }: {
   to: string;
   url: string;
   from: string;
+  plain?: boolean;
 }): Promise<void> {
   const subject = ru.magicLinkEmailSubject;
   const context = { to, from, subject };
@@ -199,6 +201,7 @@ export async function sendMagicLinkEmail({
 
   logSmtp("info", "send.start", {
     ...context,
+    plain,
     config: getSmtpConfigSnapshot(),
     verifyPath: "/login/verify",
   });
@@ -212,7 +215,7 @@ export async function sendMagicLinkEmail({
       from,
       subject,
       text,
-      html: buildMagicLinkEmailHtml(url),
+      ...(plain ? {} : { html: buildMagicLinkEmailHtml(url) }),
     });
     logSendSuccess(context, result, Date.now() - startedAt);
   } catch (error) {

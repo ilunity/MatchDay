@@ -14,6 +14,18 @@ export const ru = {
   sendMagicLink: "Отправить ссылку для входа",
   magicLinkSent: "Письмо отправлено",
   checkEmail: "Если письма нет во входящих, проверьте папку «Спам»",
+  resendMagicLink: "Отправить письмо ещё раз",
+  resendMagicLinkCooldown: (seconds: number) => {
+    if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      const remainder = seconds % 60;
+      return remainder > 0
+        ? `Повторная отправка через ${minutes} мин ${remainder} сек`
+        : `Повторная отправка через ${minutes} мин`;
+    }
+    return `Повторная отправка через ${seconds} сек`;
+  },
+  resendMagicLinkSuccess: "Письмо отправлено повторно",
   title: "Название",
   descriptionLabel: "Описание",
   descriptionPlaceholder: "Расскажите о мероприятии (необязательно)",
