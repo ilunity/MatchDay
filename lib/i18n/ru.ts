@@ -161,6 +161,7 @@ export const ru = {
   tryLoginAgain: "Попробовать снова",
   magicLinkEmailSubject: "Вход в MatchDay",
   magicLinkEmailIntro: "Нажмите кнопку, чтобы перейти на страницу входа:",
+  magicLinkEmailLinkTitle: "Войти в аккаунт",
   magicLinkEmailButton: "Войти в MatchDay",
   magicLinkEmailExpire: "Ссылка действует ограниченное время.",
   magicLinkVerifyTitle: "Вход в MatchDay",
@@ -169,7 +170,7 @@ export const ru = {
   magicLinkVerifyLogin: "Войти",
   magicLinkVerifyMissing: "Ссылка недействительна или устарела. Запросите новую.",
   magicLinkEmailText: (url: string) =>
-    `Войдите в MatchDay:\n\n${url}\n\nСсылка действует ограниченное время.`,
+    `${ru.magicLinkEmailLinkTitle}: ${url}\n${ru.magicLinkEmailExpire}`,
   loading: "Загрузка...",
   home: "Главная",
   events: "Мероприятия",

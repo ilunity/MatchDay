@@ -19,6 +19,10 @@ export function isSmtpLogEnabled(): boolean {
   return env("SMTP_LOG") === "true";
 }
 
+export function isSmtpHtmlEnabled(): boolean {
+  return env("SMTP_HTML") === "true";
+}
+
 function logSmtp(
   level: SmtpLogLevel,
   event: string,
@@ -55,6 +59,7 @@ export function getSmtpConfigSnapshot() {
     password: config.auth.pass ? "(set)" : "(missing)",
     from: env("SMTP_FROM") ?? "(missing)",
     consoleMode: isConsoleEmail(),
+    htmlMode: isSmtpHtmlEnabled(),
   };
 }
 
@@ -166,7 +171,7 @@ function buildMagicLinkEmailHtml(url: string): string {
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
                         <td align="center" style="border-radius:8px;background-color:#2563eb;background-image:${buttonGradient};">
-                          <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 28px;font-size:15px;font-weight:600;line-height:1.2;color:#fafafa;text-decoration:none;border-radius:8px;">${ru.magicLinkEmailButton}</a>
+                          <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 28px;font-size:15px;font-weight:600;line-height:1.2;color:#fafafa;text-decoration:none;border-radius:8px;">${ru.magicLinkEmailLinkTitle}</a>
                         </td>
                       </tr>
                     </table>
@@ -188,20 +193,19 @@ export async function sendMagicLinkEmail({
   to,
   url,
   from,
-  plain = false,
 }: {
   to: string;
   url: string;
   from: string;
-  plain?: boolean;
 }): Promise<void> {
   const subject = ru.magicLinkEmailSubject;
   const context = { to, from, subject };
   const startedAt = Date.now();
+  const htmlEnabled = isSmtpHtmlEnabled();
 
   logSmtp("info", "send.start", {
     ...context,
-    plain,
+    html: htmlEnabled,
     config: getSmtpConfigSnapshot(),
     verifyPath: "/login/verify",
   });
@@ -215,7 +219,7 @@ export async function sendMagicLinkEmail({
       from,
       subject,
       text,
-      ...(plain ? {} : { html: buildMagicLinkEmailHtml(url) }),
+      ...(htmlEnabled ? { html: buildMagicLinkEmailHtml(url) } : {}),
     });
     logSendSuccess(context, result, Date.now() - startedAt);
   } catch (error) {

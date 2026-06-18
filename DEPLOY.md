@@ -58,6 +58,7 @@ MINIO_PUBLIC_URL=https://matchday.example.com/api/storage
 
 SMTP_CONSOLE=false
 SMTP_LOG=false
+SMTP_HTML=false
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=noreply@example.com

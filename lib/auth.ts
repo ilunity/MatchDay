@@ -7,12 +7,12 @@ import {
   getSmtpConfigSnapshot,
   getSmtpServerConfig,
   isConsoleEmail,
+  isSmtpHtmlEnabled,
   logMagicLinkToConsole,
   logSmtpEvent,
   sendMagicLinkEmail,
 } from "@/lib/email";
 import { buildMagicLinkVerifyUrl, getAppUrl } from "@/lib/magic-link";
-import { isPlainMagicLinkRequest } from "@/lib/magic-link-request";
 import clientPromise from "@/lib/mongodb-client";
 import { SmtpSendError } from "@/lib/smtp-send-error";
 import { User } from "@/models/User";
@@ -56,17 +56,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ? { host: "localhost", port: 25, secure: false }
         : getSmtpServerConfig(),
       from: emailFromAddress(),
-      async sendVerificationRequest({ identifier, url, provider, request }) {
+      async sendVerificationRequest({ identifier, url, provider }) {
         const from = provider.from ?? emailFromAddress();
         const verifyUrl = buildMagicLinkVerifyUrl(url);
         const mode = isConsoleEmail() ? "console" : "smtp";
-        const plain = await isPlainMagicLinkRequest(request);
+        const html = isSmtpHtmlEnabled();
 
         logSmtpEvent("info", "verification.request", {
           to: identifier,
           from,
           mode,
-          plain,
+          html,
           appUrl: getAppUrl(),
           config: getSmtpConfigSnapshot(),
         });
@@ -82,12 +82,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             to: identifier,
             url: verifyUrl,
             from,
-            plain,
           });
           logSmtpEvent("info", "verification.complete", {
             to: identifier,
             mode,
-            plain,
+            html,
           });
         } catch (error) {
           logSmtpEvent("error", "verification.failed", {

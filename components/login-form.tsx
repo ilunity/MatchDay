@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
-import { MAGIC_LINK_PLAIN_FIELD } from "@/lib/magic-link-request";
 import { ru } from "@/lib/i18n/ru";
 import { toast } from "sonner";
 
@@ -80,7 +79,6 @@ export function LoginForm() {
         email,
         callbackUrl,
         redirect: false,
-        [MAGIC_LINK_PLAIN_FIELD]: "1",
       });
 
       if (result?.error) {

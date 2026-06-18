@@ -31,6 +31,7 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_FROM: ${SMTP_FROM}
       SMTP_LOG: ${SMTP_LOG:-false}
+      SMTP_HTML: ${SMTP_HTML:-false}
     networks:
       - matchday
 
