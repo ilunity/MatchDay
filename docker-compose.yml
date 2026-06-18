@@ -30,8 +30,7 @@ services:
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_FROM: ${SMTP_FROM}
-      SMTP_LOG: ${SMTP_LOG:-false}
-      SMTP_HTML: ${SMTP_HTML:-false}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
     networks:
       - matchday
 

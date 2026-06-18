@@ -11,6 +11,44 @@ export const ru = {
   email: "Email",
   emailPlaceholder: "you@example.com",
   loginDescription: "Введите email — мы отправим ссылку для входа",
+  loginWithPassword: "По логину и паролю",
+  loginWithMagicLink: "По email",
+  register: "Регистрация",
+  registerDescription: "Создайте аккаунт с логином и паролем",
+  registerLink: "Создать аккаунт",
+  noAccount: "Нет аккаунта?",
+  alreadyHaveAccount: "Уже есть аккаунт?",
+  username: "Логин",
+  usernamePlaceholder: "my_login",
+  usernameHint: "От 3 до 30 символов: латиница, цифры и _",
+  password: "Пароль",
+  passwordPlaceholder: "••••••••",
+  passwordHint: "Минимум 8 символов, буква и цифра",
+  confirmPassword: "Подтвердите пароль",
+  signInWithPassword: "Войти",
+  credentialsSigninError: "Неверный логин или пароль",
+  usernameTaken: "Этот логин уже занят",
+  usernameMustDifferFromName: "Логин не должен совпадать с именем",
+  passwordAlreadySet: "Пароль уже установлен",
+  linkEmailFirst: "Сначала подтвердите email",
+  emailAlreadyLinked: "Email уже привязан",
+  emailTaken: "Этот email уже используется",
+  linkEmail: "Привязать email",
+  linkEmailHint: "Добавьте email для входа по ссылке и уведомлений",
+  linkEmailSent: "Письмо с подтверждением отправлено",
+  setPassword: "Установить пароль",
+  setPasswordHint: "Добавьте логин и пароль для входа без email",
+  passwordSetSuccess: "Пароль установлен",
+  emailVerifiedSuccess: "Email подтверждён",
+  emailVerificationInvalid: "Ссылка подтверждения недействительна или устарела",
+  emailVerificationSubject: "Подтверждение email в MatchDay",
+  emailVerificationIntro: "Нажмите кнопку, чтобы подтвердить email:",
+  emailVerificationButton: "Подтвердить email",
+  emailVerificationText: (url: string) =>
+    `Подтвердите email в MatchDay: ${url}\n${ru.magicLinkEmailExpire}`,
+  authMethodsTitle: "Способы входа",
+  hasPassword: "Пароль установлен",
+  hasVerifiedEmail: "Email подтверждён",
   sendMagicLink: "Отправить ссылку для входа",
   magicLinkSent: "Письмо отправлено",
   checkEmail: "Если письма нет во входящих, проверьте папку «Спам»",
@@ -185,6 +223,28 @@ export const ru = {
     shareDesc: "Уникальная ссылка для каждого мероприятия",
     results: "Наглядные результаты",
     resultsDesc: "Сортировка дат по количеству доступных участников",
+  },
+  adminFlagsTitle: "Флаги функций",
+  adminFlagsDescription:
+    "Переключатели применяются на сервере без перезапуска приложения.",
+  adminFlagsSaved: "Флаг обновлён",
+  adminFlagsSmtpHtmlTitle: "HTML в письмах magic link",
+  adminFlagsSmtpHtmlDescription:
+    "Отправлять HTML-письмо с кнопкой входа вместо plain text.",
+  adminFlagsSmtpLogTitle: "Подробные SMTP-логи",
+  adminFlagsSmtpLogDescription:
+    "Писать подробные события отправки писем в консоль сервера.",
+  adminFlagsPasswordRegistrationTitle: "Регистрация по паролю",
+  adminFlagsPasswordRegistrationDescription:
+    "Показывать форму регистрации с логином и паролем.",
+  adminFlagsPasswordLoginTitle: "Вход по паролю",
+  adminFlagsPasswordLoginDescription:
+    "Разрешить вход по логину и паролю на странице входа.",
+  adminFlagsUpdatedAt: (isoDate: string, updatedBy: string | null) => {
+    const date = new Date(isoDate).toLocaleString("ru-RU");
+    return updatedBy
+      ? `Обновлено ${date} (${updatedBy})`
+      : `Обновлено ${date}`;
   },
   og: {
     homeDescription:

@@ -24,8 +24,10 @@ export default middlewareAuth((req) => {
   const profileExemptPaths = [
     "/login/complete-profile",
     "/login",
+    "/register",
     "/error",
     "/api/auth",
+    "/profile/verify-email",
   ];
   const isProfileExempt = profileExemptPaths.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)

@@ -3,6 +3,7 @@ import {
   type SentMessageInfo,
   type Transporter,
 } from "nodemailer";
+import { isEnabled } from "@/lib/feature-flags";
 import { ru } from "@/lib/i18n/ru";
 
 function env(name: string): string | undefined {
@@ -15,20 +16,20 @@ export function isConsoleEmail(): boolean {
   return env("SMTP_CONSOLE") === "true";
 }
 
-export function isSmtpLogEnabled(): boolean {
-  return env("SMTP_LOG") === "true";
+export async function isSmtpLogEnabled(): Promise<boolean> {
+  return isEnabled("smtpLog");
 }
 
-export function isSmtpHtmlEnabled(): boolean {
-  return env("SMTP_HTML") === "true";
+export async function isSmtpHtmlEnabled(): Promise<boolean> {
+  return isEnabled("smtpHtml");
 }
 
-function logSmtp(
+async function logSmtp(
   level: SmtpLogLevel,
   event: string,
   data: Record<string, unknown> = {}
-): void {
-  if (!isSmtpLogEnabled()) {
+): Promise<void> {
+  if (!(await isSmtpLogEnabled())) {
     return;
   }
 
@@ -40,15 +41,15 @@ function logSmtp(
   console.log("[smtp]", payload);
 }
 
-export function logSmtpEvent(
+export async function logSmtpEvent(
   level: SmtpLogLevel,
   event: string,
   data: Record<string, unknown> = {}
-): void {
-  logSmtp(level, event, data);
+): Promise<void> {
+  await logSmtp(level, event, data);
 }
 
-export function getSmtpConfigSnapshot() {
+export async function getSmtpConfigSnapshot() {
   const config = getSmtpServerConfig();
   return {
     host: config.host ?? "(missing)",
@@ -59,7 +60,7 @@ export function getSmtpConfigSnapshot() {
     password: config.auth.pass ? "(set)" : "(missing)",
     from: env("SMTP_FROM") ?? "(missing)",
     consoleMode: isConsoleEmail(),
-    htmlMode: isSmtpHtmlEnabled(),
+    htmlMode: await isSmtpHtmlEnabled(),
   };
 }
 
@@ -99,12 +100,12 @@ function getSmtpTransport(): Transporter {
   return createTransport(getSmtpServerConfig());
 }
 
-function logSendSuccess(
+async function logSendSuccess(
   context: { to: string; from: string; subject: string },
   result: SentMessageInfo,
   durationMs: number
-): void {
-  logSmtp("info", "send.success", {
+): Promise<void> {
+  await logSmtp("info", "send.success", {
     to: context.to,
     from: context.from,
     subject: context.subject,
@@ -117,11 +118,11 @@ function logSendSuccess(
   });
 }
 
-function logSendError(
+async function logSendError(
   error: unknown,
   context: { to: string; from: string; subject: string },
   durationMs: number
-): void {
+): Promise<void> {
   const err = error as {
     code?: string;
     response?: string;
@@ -129,12 +130,12 @@ function logSendError(
     command?: string;
   };
 
-  logSmtp("error", "send.failed", {
+  await logSmtp("error", "send.failed", {
     to: context.to,
     from: context.from,
     subject: context.subject,
     durationMs,
-    config: getSmtpConfigSnapshot(),
+    config: await getSmtpConfigSnapshot(),
     code: err.code ?? null,
     response: err.response ?? null,
     responseCode: err.responseCode ?? null,
@@ -189,6 +190,92 @@ function buildMagicLinkEmailHtml(url: string): string {
 </html>`;
 }
 
+export async function sendEmailVerificationEmail({
+  to,
+  url,
+  from,
+}: {
+  to: string;
+  url: string;
+  from: string;
+}): Promise<void> {
+  const subject = ru.emailVerificationSubject;
+  const context = { to, from, subject };
+  const startedAt = Date.now();
+  const htmlEnabled = await isSmtpHtmlEnabled();
+
+  await logSmtp("info", "send.start", {
+    ...context,
+    html: htmlEnabled,
+    type: "email-verification",
+  });
+
+  const transport = getSmtpTransport();
+  const text = ru.emailVerificationText(url);
+
+  try {
+    const result = await transport.sendMail({
+      to,
+      from,
+      subject,
+      text,
+      ...(htmlEnabled
+        ? { html: buildEmailVerificationHtml(url) }
+        : {}),
+    });
+    await logSendSuccess(context, result, Date.now() - startedAt);
+  } catch (error) {
+    await logSendError(error, context, Date.now() - startedAt);
+    throw error;
+  }
+}
+
+function buildEmailVerificationHtml(url: string): string {
+  const buttonGradient =
+    "linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%)";
+  const pageGradient =
+    "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 99, 235, 0.14), transparent), radial-gradient(ellipse 72% 58% at 100% 0%, rgba(37, 99, 235, 0.22), transparent 72%), #fafafa";
+
+  return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${ru.emailVerificationSubject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#fafafa;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${pageGradient};background-color:#fafafa;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background-color:#ffffff;border:1px solid #e4e4e7;border-radius:12px;">
+          <tr>
+            <td align="center" style="padding:32px 28px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0a0a0a;text-align:center;">
+              <p style="margin:0 0 8px;font-size:20px;font-weight:700;line-height:1.3;">${ru.appName}</p>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#71717a;">${ru.emailVerificationIntro}</p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" style="border-radius:8px;background-color:#2563eb;background-image:${buttonGradient};">
+                          <a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 28px;font-size:15px;font-weight:600;line-height:1.2;color:#fafafa;text-decoration:none;border-radius:8px;">${ru.emailVerificationButton}</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;font-size:13px;line-height:1.5;color:#71717a;">${ru.magicLinkEmailExpire}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 export async function sendMagicLinkEmail({
   to,
   url,
@@ -201,12 +288,12 @@ export async function sendMagicLinkEmail({
   const subject = ru.magicLinkEmailSubject;
   const context = { to, from, subject };
   const startedAt = Date.now();
-  const htmlEnabled = isSmtpHtmlEnabled();
+  const htmlEnabled = await isSmtpHtmlEnabled();
 
-  logSmtp("info", "send.start", {
+  await logSmtp("info", "send.start", {
     ...context,
     html: htmlEnabled,
-    config: getSmtpConfigSnapshot(),
+    config: await getSmtpConfigSnapshot(),
     verifyPath: "/login/verify",
   });
 
@@ -221,9 +308,9 @@ export async function sendMagicLinkEmail({
       text,
       ...(htmlEnabled ? { html: buildMagicLinkEmailHtml(url) } : {}),
     });
-    logSendSuccess(context, result, Date.now() - startedAt);
+    await logSendSuccess(context, result, Date.now() - startedAt);
   } catch (error) {
-    logSendError(error, context, Date.now() - startedAt);
+    await logSendError(error, context, Date.now() - startedAt);
     throw error;
   }
 }

@@ -12,8 +12,11 @@ export function getAuthErrorMessage(
   error?: string | null,
   code?: string | null
 ): string {
-  if (error === "CredentialsSignin" && code === SMTP_SEND_ERROR_CODE) {
-    return ru.authErrorEmailSend;
+  if (error === "CredentialsSignin") {
+    if (code === SMTP_SEND_ERROR_CODE) {
+      return ru.authErrorEmailSend;
+    }
+    return ru.credentialsSigninError;
   }
 
   if (!error) return ru.authErrorDefault;

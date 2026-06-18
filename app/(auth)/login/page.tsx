@@ -1,8 +1,11 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
+import { getPasswordAuthFlags } from "@/actions/auth";
 import { ru } from "@/lib/i18n/ru";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const { passwordLogin, passwordRegistration } = await getPasswordAuthFlags();
+
   return (
     <Suspense
       fallback={
@@ -11,7 +14,10 @@ export default function LoginPage() {
         </div>
       }
     >
-      <LoginForm />
+      <LoginForm
+        passwordLoginEnabled={passwordLogin}
+        passwordRegistrationEnabled={passwordRegistration}
+      />
     </Suspense>
   );
 }
