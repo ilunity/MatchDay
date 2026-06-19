@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { requestEmailLink, setUserPassword } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ru } from "@/lib/i18n/ru";
@@ -83,22 +84,23 @@ export function ProfileAuthSection({
   }
 
   return (
-    <div className="space-y-6 rounded-lg border p-4">
-      <div>
-        <h2 className="text-lg font-semibold">{ru.authMethodsTitle}</h2>
-        <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-          {hasVerifiedEmail && email && (
-            <li>
-              {ru.hasVerifiedEmail}: {email}
-            </li>
-          )}
-          {hasPassword && username && (
-            <li>
-              {ru.hasPassword}: {username}
-            </li>
-          )}
-        </ul>
-      </div>
+    <Card>
+      <CardContent className="space-y-6 pt-6">
+        <div>
+          <h2 className="text-lg font-semibold">{ru.authMethodsTitle}</h2>
+          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+            {hasVerifiedEmail && email && (
+              <li>
+                {ru.hasVerifiedEmail}: {email}
+              </li>
+            )}
+            {hasPassword && username && (
+              <li>
+                {ru.hasPassword}: {username}
+              </li>
+            )}
+          </ul>
+        </div>
 
       {showLinkEmail && (
         <form onSubmit={handleLinkEmail} className="space-y-4">
@@ -176,6 +178,7 @@ export function ProfileAuthSection({
           </Button>
         </form>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
