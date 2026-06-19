@@ -16,6 +16,8 @@ const cached: MongooseCache = global.mongooseCache ?? {
 
 global.mongooseCache = cached;
 
+let userIndexesSynced = false;
+
 export async function connectDB() {
   const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -32,5 +34,12 @@ export async function connectDB() {
   }
 
   cached.conn = await cached.promise;
+
+  if (!userIndexesSynced) {
+    userIndexesSynced = true;
+    const { User } = await import("@/models/User");
+    await User.syncIndexes();
+  }
+
   return cached.conn;
 }

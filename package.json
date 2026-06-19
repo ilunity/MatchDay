@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:flags": "npx tsx scripts/seed-flags.ts"
+    "seed:flags": "npx tsx scripts/seed-flags.ts",
+    "migrate:user-indexes": "npx tsx scripts/migrate-user-indexes.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
