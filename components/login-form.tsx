@@ -258,7 +258,7 @@ export function LoginForm({
               </form>
             )}
 
-            {passwordRegistrationEnabled && (
+            {passwordRegistrationEnabled && mode === "password" && (
               <p className="text-center text-sm text-muted-foreground">
                 {ru.noAccount}{" "}
                 <Link
