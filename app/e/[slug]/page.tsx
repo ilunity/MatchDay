@@ -96,6 +96,9 @@ export default async function EventPage({ params }: PageProps) {
   const possibleDates = normalizeDates(
     event.possibleDates.map((d) => new Date(d))
   );
+  const confirmedDates = normalizeDates(
+    (event.confirmedDates ?? []).map((d) => new Date(d))
+  );
   const userAvailability = await getUserAvailability(event._id.toString());
   const initialSelected = normalizeDates(
     userAvailability.map((d) => new Date(d))
@@ -143,12 +146,15 @@ export default async function EventPage({ params }: PageProps) {
           eventSlug={slug}
           possibleDates={possibleDates}
           initialSelected={initialSelected}
+          initialConfirmedDates={confirmedDates}
           bestDates={bestDates}
           participantsByDate={participantsByDate}
           currentUserName={currentUserName}
           disabled={calendarDisabled}
           stats={stats}
           totalParticipants={totalParticipants}
+          isOwner={isOwner}
+          confirmationMode={event.confirmationMode ?? null}
         />
       </div>
     </>

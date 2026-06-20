@@ -59,6 +59,7 @@
 .rdp-day {
   text-align: center !important;
   height: var(--rdp-day-height, auto);
+  overflow: visible;
 }
 
 .rdp-day > div {
@@ -67,6 +68,7 @@
   justify-content: center;
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
 @media (min-width: 768px) {
@@ -95,6 +97,11 @@
   aspect-ratio: 1;
   align-items: center;
   justify-content: center;
+  overflow: visible;
+}
+
+.rdp-root:not(.calendar-fluid) .rdp-day > div > span {
+  overflow: visible;
 }
 
 /* Selected day fill — rdp's `.rdp-day_button { background: none }` overrides Tailwind bg-* */

@@ -40,6 +40,7 @@ export default async function EditEventPage({ params }: PageProps) {
             : undefined,
           possibleDates: event.possibleDates.map((d) => new Date(d)),
           requireAuth: event.requireAuth,
+          confirmationMode: event.confirmationMode ?? "one_of",
           participantsByDate,
           bestDates,
         }}

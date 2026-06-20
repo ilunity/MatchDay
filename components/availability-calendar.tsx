@@ -1,14 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { CalendarCheck, CalendarDays, CalendarPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { setAvailability } from "@/actions/availability";
+import { setEventConfirmation } from "@/actions/events";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Calendar } from "@/components/ui/calendar";
+import { CalendarLegend } from "@/components/calendar-legend";
 import { DateStats } from "@/components/date-stats";
 import { useUnsavedChanges } from "@/components/unsaved-changes-provider";
 import { Button } from "@/components/ui/button";
-import { dateKey, getDefaultMonth, normalizeDates, parseDateKey } from "@/lib/dates";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  dateKey,
+  getDefaultMonth,
+  normalizeDates,
+  parseDateKey,
+} from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import type { ConfirmationMode } from "@/lib/validations/confirmation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -25,28 +40,43 @@ export function AvailabilityCalendar({
   eventSlug,
   possibleDates,
   initialSelected,
+  initialConfirmedDates,
   bestDates,
   participantsByDate,
   currentUserName,
   disabled,
   stats,
   totalParticipants,
+  isOwner = false,
+  confirmationMode = null,
 }: {
   eventId: string;
   eventSlug: string;
   possibleDates: Date[];
   initialSelected: Date[];
+  initialConfirmedDates: Date[];
   bestDates: string[];
   participantsByDate?: Record<string, string[]>;
   currentUserName?: string;
   disabled?: boolean;
   stats?: Array<{ date: string; count: number; participants?: string[] }>;
   totalParticipants?: number;
+  isOwner?: boolean;
+  confirmationMode?: ConfirmationMode | null;
 }) {
+  const router = useRouter();
   const possibleSet = new Set(possibleDates.map(dateKey));
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingDates, setIsConfirmingDates] = useState(false);
+  const [isStatsConfirming, setIsStatsConfirming] = useState(false);
   const [selected, setSelected] = useState<Date[]>(() =>
     normalizeDates(initialSelected)
+  );
+  const [committedSelected, setCommittedSelected] = useState<Date[]>(() =>
+    normalizeDates(initialSelected)
+  );
+  const [confirmedDraft, setConfirmedDraft] = useState<Date[]>(() =>
+    normalizeDates(initialConfirmedDates)
   );
   const [pending, startTransition] = useTransition();
   const [month, setMonth] = useState(() => getDefaultMonth(possibleDates));
@@ -83,23 +113,46 @@ export function AvailabilityCalendar({
     }
   }
 
-  useEffect(() => {
-    setSelected(normalizeDates(initialSelected));
-  }, [initialSelected]);
-
-  const hasChanges = useMemo(
-    () => !dateSetsEqual(selected, initialSelected),
-    [selected, initialSelected]
+  const initialSelectedSignature = useMemo(
+    () => initialSelected.map(dateKey).sort().join("\0"),
+    [initialSelected]
   );
 
-  const hasUnsavedEdits = isEditing && hasChanges;
+  useEffect(() => {
+    const next = normalizeDates(initialSelected);
+    setCommittedSelected(next);
+    setSelected((prev) => (dateSetsEqual(prev, next) ? prev : next));
+  }, [initialSelectedSignature, initialSelected]);
+
+  useEffect(() => {
+    setConfirmedDraft(normalizeDates(initialConfirmedDates));
+  }, [initialConfirmedDates]);
+
+  const hasAvailabilityChanges = useMemo(
+    () => !dateSetsEqual(selected, committedSelected),
+    [selected, committedSelected]
+  );
+
+  const hasConfirmationChanges = useMemo(() => {
+    const datesChanged = !dateSetsEqual(
+      confirmedDraft,
+      initialConfirmedDates
+    );
+    const clearedAll =
+      initialConfirmedDates.length > 0 && confirmedDraft.length === 0;
+    return datesChanged || clearedAll;
+  }, [confirmedDraft, initialConfirmedDates]);
+
+  const hasUnsavedEdits =
+    (isEditing && hasAvailabilityChanges) ||
+    (isConfirmingDates && hasConfirmationChanges);
 
   useEffect(() => {
     setHasUnsavedChanges(hasUnsavedEdits);
     return () => setHasUnsavedChanges(false);
   }, [hasUnsavedEdits, setHasUnsavedChanges]);
 
-  function handleSelect(dates: Date[] | undefined) {
+  function handleAvailabilitySelect(dates: Date[] | undefined) {
     if (!isEditing) {
       return;
     }
@@ -113,12 +166,41 @@ export function AvailabilityCalendar({
     setSelected(filtered);
   }
 
-  function handleCancelEdit() {
-    setSelected(initialSelected);
+  /** Keep DayPicker controlled in view mode — undefined onSelect uses stale internal state. */
+  function handleReadOnlySelect() {}
+
+  function handleToggleConfirmedDate(date: Date) {
+    if (!isConfirmingDates) {
+      return;
+    }
+    const key = dateKey(date);
+    if (!possibleSet.has(key)) {
+      return;
+    }
+    setConfirmedDraft((prev) => {
+      const keys = new Set(prev.map(dateKey));
+      if (keys.has(key)) {
+        return normalizeDates(prev.filter((d) => dateKey(d) !== key));
+      }
+      return normalizeDates([...prev, date]);
+    });
+  }
+
+  function handleCancelAvailabilityEdit() {
+    setSelected(committedSelected);
     setIsEditing(false);
   }
 
-  function handleSave() {
+  function handleCancelConfirmEdit() {
+    setConfirmedDraft(normalizeDates(initialConfirmedDates));
+    setIsConfirmingDates(false);
+  }
+
+  function handleClearAllConfirmedDates() {
+    setConfirmedDraft([]);
+  }
+
+  function handleSaveAvailability() {
     const formData = new FormData();
     formData.set("eventId", eventId);
     formData.set("eventSlug", eventSlug);
@@ -128,23 +210,71 @@ export function AvailabilityCalendar({
       const result = await setAvailability(formData);
       if (result.success) {
         toast.success(ru.availabilitySaved);
+        setCommittedSelected(normalizeDates(selected));
         setIsEditing(false);
+        router.refresh();
       } else {
         toast.error(result.error ?? ru.errorGeneric);
       }
     });
   }
 
+  function handleSaveConfirmation() {
+    const formData = new FormData();
+    formData.set("slug", eventSlug);
+    confirmedDraft.forEach((d) => formData.append("confirmedDates", dateKey(d)));
+
+    startTransition(async () => {
+      const result = await setEventConfirmation(formData);
+      if (result.success) {
+        toast.success(ru.confirmationSaved);
+        setIsConfirmingDates(false);
+        router.refresh();
+      } else {
+        toast.error(result.error ?? ru.errorGeneric);
+      }
+    });
+  }
+
+  async function handleStatsConfirmationChange(dates: Date[]) {
+    const formData = new FormData();
+    formData.set("slug", eventSlug);
+    dates.forEach((d) => formData.append("confirmedDates", dateKey(d)));
+
+    const result = await setEventConfirmation(formData);
+    if (result.success) {
+      toast.success(ru.confirmationSaved);
+      router.refresh();
+    } else {
+      toast.error(result.error ?? ru.errorGeneric);
+    }
+  }
+
   const isDayDisabled = (date: Date) => !possibleSet.has(dateKey(date));
   const isLgUp = useMediaQuery("(min-width: 600px)");
+
+  const calendarConfirmedDates = isConfirmingDates
+    ? confirmedDraft
+    : normalizeDates(initialConfirmedDates);
+  const showLegend =
+    initialConfirmedDates.length > 0 ||
+    isConfirmingDates ||
+    confirmedDraft.length > 0;
+
+  const calendarTitle = isConfirmingDates
+    ? ru.confirmDates
+    : ru.yourAvailability;
+  const calendarHint = isConfirmingDates
+    ? ru.confirmDatesHint
+    : isEditing
+      ? ru.availabilityHint
+      : ru.availabilityViewHint;
 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold">{ru.yourAvailability}</h3>
-        <p className="text-sm text-muted-foreground">
-          {isEditing ? ru.availabilityHint : ru.availabilityViewHint}
-        </p>
+        <h3 className="text-lg font-semibold">{calendarTitle}</h3>
+        <p className="text-sm text-muted-foreground">{calendarHint}</p>
       </div>
       <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         <div ref={calendarRef} className="w-full shrink-0 lg:w-auto">
@@ -154,55 +284,128 @@ export function AvailabilityCalendar({
                 size={isLgUp ? "lg" : "sm"}
                 mode="multiple"
                 selected={selected}
-                onSelect={handleSelect}
+                onSelect={
+                  isEditing ? handleAvailabilitySelect : handleReadOnlySelect
+                }
                 month={month}
                 onMonthChange={setMonth}
                 possibleDates={possibleDates}
                 bestDates={bestDates}
+                confirmedDates={calendarConfirmedDates}
+                confirmationEditMode={isConfirmingDates}
+                confirmationMode={confirmationMode}
+                onToggleConfirmedDate={handleToggleConfirmedDate}
                 participantsByDate={participantsByDate}
                 currentUserName={currentUserName}
-                showParticipantTooltip={!isEditing}
-                readOnly={!isEditing}
-                disabled={disabled ? true : isDayDisabled}
+                showParticipantTooltip={!isEditing && !isConfirmingDates}
+                readOnly={!isEditing && !isConfirmingDates}
+                disabled={disabled && !isConfirmingDates ? true : isDayDisabled}
                 highlightedDate={highlightedDate}
                 highlightKey={highlightKey}
                 numberOfMonths={1}
                 className="w-full"
               />
-              {!disabled && (
-                <div className="mt-2 w-full border-t pt-2">
-                  {isEditing ? (
-                    <div className="grid w-full grid-cols-2 gap-2">
+              {showLegend && (
+                <CalendarLegend className="mt-2 border-t pt-2" />
+              )}
+              <div className="mt-2 w-full border-t pt-2">
+                {isConfirmingDates && isOwner ? (
+                  <div className="flex flex-col gap-2">
+                    {confirmedDraft.length > 0 && (
                       <Button
-                        onClick={handleSave}
-                        disabled={pending || !hasChanges}
+                        type="button"
+                        variant="outline"
+                        onClick={handleClearAllConfirmedDates}
+                        disabled={pending}
                         className="w-full min-w-0"
                       >
-                        {pending ? ru.loading : ru.saveAvailability}
+                        {ru.resetAllConfirmedDates}
+                      </Button>
+                    )}
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        onClick={handleSaveConfirmation}
+                        disabled={pending || !hasConfirmationChanges}
+                        className="w-full min-w-0"
+                      >
+                        {pending ? ru.loading : ru.saveConfirmation}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={handleCancelEdit}
+                        onClick={handleCancelConfirmEdit}
                         disabled={pending}
                         className="w-full min-w-0"
                       >
                         {ru.cancelEdit}
                       </Button>
                     </div>
-                  ) : (
+                  </div>
+                ) : isEditing ? (
+                  <div className="grid w-full grid-cols-2 gap-2">
+                    <Button
+                      onClick={handleSaveAvailability}
+                      disabled={pending || !hasAvailabilityChanges}
+                      className="w-full min-w-0"
+                    >
+                      {pending ? ru.loading : ru.saveAvailability}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancelAvailabilityEdit}
+                      disabled={pending}
+                      className="w-full min-w-0"
+                    >
+                      {ru.cancelEdit}
+                    </Button>
+                  </div>
+                ) : !disabled ? (
+                  <div
+                    className={cn(
+                      "grid w-full gap-2",
+                      isOwner ? "grid-cols-2" : "grid-cols-1"
+                    )}
+                  >
                     <Button
                       type="button"
                       onClick={() => setIsEditing(true)}
-                      className="w-full sm:w-auto"
+                      className="w-full min-w-0"
                     >
-                      {initialSelected.length === 0
-                        ? ru.startSelectingDates
-                        : ru.changeSelection}
+                      {committedSelected.length === 0 ? (
+                        <>
+                          <CalendarPlus className="size-4" aria-hidden />
+                          {ru.startSelectingDates}
+                        </>
+                      ) : (
+                        <>
+                          <CalendarDays className="size-4" aria-hidden />
+                          {ru.changeSelection}
+                        </>
+                      )}
                     </Button>
-                  )}
-                </div>
-              )}
+                    {isOwner && (
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsConfirmingDates(true)}
+                            disabled={isStatsConfirming}
+                            className="w-full min-w-0"
+                          >
+                            <CalendarCheck className="size-4" aria-hidden />
+                            {ru.confirmDates}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs">
+                          {ru.confirmDatesTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
@@ -214,6 +417,12 @@ export function AvailabilityCalendar({
                 totalParticipants={totalParticipants}
                 currentUserName={currentUserName}
                 onDateClick={handleBestDateClick}
+                isOwner={isOwner}
+                isConfirmingDates={isConfirmingDates}
+                confirmedDates={initialConfirmedDates.map(dateKey)}
+                confirmationMode={confirmationMode}
+                onConfirmationChange={handleStatsConfirmationChange}
+                onEditingConfirmationChange={setIsStatsConfirming}
               />
             </div>
           </div>

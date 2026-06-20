@@ -13,6 +13,7 @@ import {
 import { Undo2, Redo2 } from "lucide-react";
 import { createEvent, updateEvent } from "@/actions/events";
 import { EventCoverField } from "@/components/event-cover-field";
+import { ConfirmationModeSelector } from "@/components/confirmation-mode-selector";
 import {
   Accordion,
   AccordionContent,
@@ -51,6 +52,7 @@ import {
   normalizeDates,
 } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import type { ConfirmationMode } from "@/lib/validations/confirmation";
 import { cn } from "@/lib/utils";
 
 function dedupeDatesByKey(dates: Date[]): Date[] {
@@ -146,6 +148,7 @@ type EventFormInitial = {
   coverUrl?: string;
   possibleDates: Date[];
   requireAuth?: boolean;
+  confirmationMode?: ConfirmationMode;
   participantsByDate?: Record<string, string[]>;
   bestDates?: string[];
 };
@@ -186,6 +189,9 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const selectedDates = dateHistory.present;
   const [isEditingDates, setIsEditingDates] = useState(false);
   const [requireAuth, setRequireAuth] = useState(initial?.requireAuth ?? false);
+  const [confirmationMode, setConfirmationMode] = useState<ConfirmationMode>(
+    initial?.confirmationMode ?? "one_of"
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const isLgUp = useMediaQuery("(min-width: 600px)");
@@ -373,6 +379,8 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     </Accordion>
   );
 
+  const editPossibleDatesButtonClassName = "w-full sm:w-[320px]";
+
   const desktopCalendarActionControls = (
     <>
       {mode === "edit" && isEditingDates ? (
@@ -418,7 +426,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           <Button
             type="button"
             onClick={handleStartEditingDates}
-            className="w-full lg:w-auto"
+            className={editPossibleDatesButtonClassName}
           >
             {selectedDates.length === 0
               ? ru.selectPossibleDates
@@ -434,7 +442,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
       <Button
         type="button"
         onClick={handleStartEditingDates}
-        className="w-full"
+        className={editPossibleDatesButtonClassName}
       >
         {selectedDates.length === 0
           ? ru.selectPossibleDates
@@ -489,6 +497,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
   const calendarActionBarClassName = cn(
     "mt-2 flex w-full flex-col gap-2 border-t pt-2",
     "lg:flex-row lg:items-center lg:gap-2 lg:w-full",
+    mode === "edit" && !isEditingDates && "items-center justify-center",
     mode === "edit" && !isEditingDates
       ? "lg:justify-center"
       : mode === "edit" && isEditingDates
@@ -509,6 +518,7 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.set("requireAuth", requireAuth ? "on" : "off");
+    formData.set("confirmationMode", confirmationMode);
     selectedDates.forEach((d) => formData.append("possibleDates", dateKey(d)));
 
     if (mode === "edit" && initial) {
@@ -582,6 +592,18 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
         </div>
       )}
 
+      <div className="space-y-2 rounded-lg border bg-card p-4">
+        <Label>{ru.confirmationModeLabel}</Label>
+        <p className="text-sm text-muted-foreground">
+          {ru.confirmationModeFormHint}
+        </p>
+        <ConfirmationModeSelector
+          value={confirmationMode}
+          onChange={setConfirmationMode}
+          disabled={pending}
+        />
+      </div>
+
       <div className="space-y-2">
         <Label>{ru.possibleDates}</Label>
         <p className="text-sm text-muted-foreground">
@@ -602,8 +624,11 @@ export function EventForm(props: EventFormProps = { mode: "create" }) {
           >
             <div
               className={cn(
-                "max-lg:order-1 w-full shrink-0 max-w-xl",
-                !showDatePresetsInline && "lg:mx-auto"
+                "max-lg:order-1 flex w-full max-w-xl shrink-0 justify-center",
+                "max-lg:mx-auto",
+                showDatePresetsInline
+                  ? "lg:mx-0 lg:justify-start"
+                  : "lg:mx-auto lg:justify-center"
               )}
             >
               <Calendar

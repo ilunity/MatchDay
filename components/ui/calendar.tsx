@@ -22,6 +22,8 @@ import {
   monthKey,
 } from "@/lib/dates";
 import { ru } from "@/lib/i18n/ru";
+import { getConfirmedDateTooltip } from "@/lib/confirmed-dates";
+import type { ConfirmationMode } from "@/lib/validations/confirmation";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -29,7 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -76,8 +78,12 @@ type DayButtonOptions = {
   participantsByDate: Record<string, string[]>;
   showParticipantTooltip: boolean;
   readOnly: boolean;
+  confirmationEditMode: boolean;
+  onToggleConfirmedDate?: (date: Date) => void;
   currentUserName?: string;
   selectedDateKeys: Set<string>;
+  confirmedDateKeys: Set<string>;
+  confirmationMode: ConfirmationMode | null;
   highlightedDate: string | null;
   highlightKey: number;
 };
@@ -87,8 +93,12 @@ function createDayButton({
   participantsByDate,
   showParticipantTooltip,
   readOnly,
+  confirmationEditMode,
+  onToggleConfirmedDate,
   currentUserName,
   selectedDateKeys,
+  confirmedDateKeys,
+  confirmationMode,
   highlightedDate,
   highlightKey,
 }: DayButtonOptions) {
@@ -106,16 +116,19 @@ function createDayButton({
     const names = participantsByDate[key] ?? [];
     const isSelected =
       selectedDateKeys.has(key) || Boolean(modifiers.selected);
+    const isConfirmed = confirmedDateKeys.has(key) || Boolean(modifiers.confirmed);
     const isDisabled = modifiers.disabled;
     const isHighlighted = highlightedDate === key;
 
     const cursorClass = isDisabled
       ? "cursor-not-allowed"
-      : readOnly
-        ? showParticipantTooltip && names.length > 0
-          ? "cursor-pointer"
-          : "cursor-default"
-        : "cursor-pointer";
+      : confirmationEditMode
+        ? "cursor-pointer"
+        : readOnly
+          ? showParticipantTooltip && (names.length > 0 || isConfirmed)
+            ? "cursor-pointer"
+            : "cursor-default"
+          : "cursor-pointer";
 
     const button = (
       <button
@@ -140,6 +153,7 @@ function createDayButton({
             : "hover:opacity-90 focus-visible:outline-none",
           isDisabled && "opacity-50",
           isHighlighted && "calendar-day-highlight",
+          isConfirmed && "ring-2 ring-amber-500 ring-inset",
           className
         )}
         aria-label={(() => {
@@ -147,19 +161,41 @@ function createDayButton({
             names.length > 0
               ? `${day.date.getDate()}, ${names.join(", ")}`
               : String(day.date.getDate());
-          return isSelected ? `${dayLabel}, выбрано` : dayLabel;
+          const parts: string[] = [dayLabel];
+          if (isSelected) parts.push("выбрано");
+          if (isConfirmed) parts.push(ru.calendarConfirmedByOrganizer);
+          return parts.join(", ");
         })()}
         onClick={
-          readOnly
+          confirmationEditMode
             ? (event) => {
                 event.preventDefault();
                 event.stopPropagation();
+                if (!isDisabled) {
+                  onToggleConfirmedDate?.(day.date);
+                }
               }
-            : onClick
+            : readOnly
+              ? (event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }
+              : onClick
         }
-        tabIndex={readOnly ? -1 : props.tabIndex}
+        tabIndex={readOnly && !confirmationEditMode ? -1 : props.tabIndex}
         {...props}
       >
+        {isConfirmed && (
+          <Check
+            className={cn(
+              "pointer-events-none absolute z-10 text-amber-600 dark:text-amber-400",
+              size === "sm"
+                ? "right-0.5 top-0.5 size-3"
+                : "-right-1.5 -top-1.5 size-3.5"
+            )}
+            aria-hidden
+          />
+        )}
         <span className={cn("leading-none", dayNumber)}>{day.date.getDate()}</span>
         {names.length > 0 && (
           <span
@@ -174,29 +210,43 @@ function createDayButton({
       </button>
     );
 
-    if (showParticipantTooltip && names.length > 0) {
+    if (showParticipantTooltip && (names.length > 0 || isConfirmed)) {
       return (
         <Tooltip delayDuration={200}>
           <TooltipTrigger asChild>{button}</TooltipTrigger>
           <TooltipContent side="top" className="max-w-xs">
-            <p className="mb-1 font-medium">{ru.calendarParticipants}</p>
-            <ul className="space-y-0.5">
-              {names.map((name) => {
-                const isCurrentUser = currentUserName === name;
-                return (
-                  <li
-                    key={name}
-                    className={cn(
-                      isCurrentUser &&
-                        "font-medium text-green-600 dark:text-green-400"
-                    )}
-                  >
-                    {name}
-                    {isCurrentUser && ` ${ru.calendarParticipantYou}`}
-                  </li>
-                );
-              })}
-            </ul>
+            {isConfirmed && (
+              <p
+                className={cn(
+                  "font-medium text-amber-700 dark:text-amber-400",
+                  names.length > 0 && "mb-2"
+                )}
+              >
+                {getConfirmedDateTooltip(confirmationMode)}
+              </p>
+            )}
+            {names.length > 0 && (
+              <>
+                <p className="mb-1 font-medium">{ru.calendarParticipants}</p>
+                <ul className="space-y-0.5">
+                  {names.map((name) => {
+                    const isCurrentUser = currentUserName === name;
+                    return (
+                      <li
+                        key={name}
+                        className={cn(
+                          isCurrentUser &&
+                            "font-medium text-green-600 dark:text-green-400"
+                        )}
+                      >
+                        {name}
+                        {isCurrentUser && ` ${ru.calendarParticipantYou}`}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
           </TooltipContent>
         </Tooltip>
       );
@@ -399,12 +449,19 @@ function Weekday({ className, children, ...props }: React.ComponentProps<"th">) 
   );
 }
 
-function createDayCell(dayBox: string) {
-  function Day({ children, className, ...props }: React.ComponentProps<"td">) {
+function createDayCell(dayBox: string, confirmedDateKeys: Set<string>) {
+  function Day({
+    day,
+    children,
+    className,
+    ...props
+  }: React.ComponentProps<"td"> & { day: { date: Date } }) {
+    const isConfirmed = confirmedDateKeys.has(dateKey(day.date));
+
     return (
-      <td className={className} {...props}>
-        <div className="flex w-full justify-center">
-          <span className={cn("flex items-center justify-center", dayBox)}>
+      <td className={cn(className, "overflow-visible")} {...props}>
+        <div className="flex w-full justify-center overflow-visible">
+          <span className={cn("flex items-center justify-center overflow-visible", dayBox)}>
             {children}
           </span>
         </div>
@@ -421,12 +478,17 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   /** Limit month/year navigation to possibleDates (event page). Default: when possibleDates is set. */
   restrictToPossibleDates?: boolean;
   bestDates?: string[];
+  confirmedDates?: Date[];
   participantsByDate?: Record<string, string[]>;
   showParticipantTooltip?: boolean;
   readOnly?: boolean;
   currentUserName?: string;
   highlightedDate?: string | null;
   highlightKey?: number;
+  /** Toggle confirmed dates on click; availability selection stays visible. */
+  confirmationEditMode?: boolean;
+  onToggleConfirmedDate?: (date: Date) => void;
+  confirmationMode?: ConfirmationMode | null;
 };
 
 function Calendar({
@@ -437,12 +499,16 @@ function Calendar({
   possibleDates,
   restrictToPossibleDates = possibleDates !== undefined,
   bestDates = [],
+  confirmedDates = [],
   participantsByDate = {},
   showParticipantTooltip = false,
   readOnly = false,
   currentUserName,
   highlightedDate = null,
   highlightKey = 0,
+  confirmationEditMode = false,
+  onToggleConfirmedDate,
+  confirmationMode = null,
   modifiers,
   modifiersClassNames,
   components,
@@ -454,6 +520,10 @@ function Calendar({
   const { dayColumn, weekdayCell, dayBox, gridWidth, cssVars, weekday } =
     CALENDAR_SIZES[size];
   const bestSet = new Set(bestDates);
+  const confirmedSet = React.useMemo(
+    () => new Set(confirmedDates.map(dateKey)),
+    [confirmedDates]
+  );
   const selectedDateKeys = React.useMemo(() => {
     const dates =
       props.mode === "multiple" && Array.isArray(props.selected)
@@ -495,8 +565,12 @@ function Calendar({
         participantsByDate,
         showParticipantTooltip,
         readOnly,
+        confirmationEditMode,
+        onToggleConfirmedDate,
         currentUserName,
         selectedDateKeys,
+        confirmedDateKeys: confirmedSet,
+        confirmationMode,
         highlightedDate,
         highlightKey,
       }),
@@ -505,8 +579,12 @@ function Calendar({
       participantsByDate,
       showParticipantTooltip,
       readOnly,
+      confirmationEditMode,
+      onToggleConfirmedDate,
       currentUserName,
       selectedDateKeys,
+      confirmedSet,
+      confirmationMode,
       highlightedDate,
       highlightKey,
     ]
@@ -518,7 +596,10 @@ function Calendar({
         : {},
     [restrictToPossibleDates, monthsWithPossible]
   );
-  const Day = React.useMemo(() => createDayCell(dayBox), [dayBox]);
+  const Day = React.useMemo(
+    () => createDayCell(dayBox, confirmedSet),
+    [dayBox, confirmedSet]
+  );
   const today = todayProp ?? getToday();
 
   return (
@@ -626,11 +707,13 @@ function Calendar({
           ? { possible: possibleDates ?? [] }
           : {}),
         best: (date) => bestSet.has(dateKey(date)),
+        confirmed: (date) => confirmedSet.has(dateKey(date)),
         ...modifiers,
       }}
       modifiersClassNames={{
         possible: "",
         best: "",
+        confirmed: "",
         ...modifiersClassNames,
       }}
       {...props}

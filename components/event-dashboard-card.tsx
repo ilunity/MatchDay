@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { formatDateShortRu } from "@/lib/dates";
+import { formatConfirmedDatesBadge } from "@/lib/confirmed-dates";
 import { ru } from "@/lib/i18n/ru";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type EventDashboardCardProps = {
@@ -12,6 +14,7 @@ type EventDashboardCardProps = {
   title: string;
   createdAt: Date;
   possibleDatesCount: number;
+  confirmedDatesCount: number;
   requireAuth: boolean;
   isOwner?: boolean;
 };
@@ -21,10 +24,12 @@ export function EventDashboardCard({
   title,
   createdAt,
   possibleDatesCount,
+  confirmedDatesCount,
   requireAuth,
   isOwner = true,
 }: EventDashboardCardProps) {
   const router = useRouter();
+  const confirmationBadge = formatConfirmedDatesBadge(confirmedDatesCount);
 
   return (
     <Card
@@ -58,6 +63,16 @@ export function EventDashboardCard({
               {ru.eventRoleParticipant}
             </span>
           )}
+          <span
+            className={cn(
+              "mr-2 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide",
+              confirmedDatesCount > 0
+                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            {confirmationBadge}
+          </span>
           {ru.createdAt}: {formatDateShortRu(createdAt)}
         </p>
       </CardHeader>

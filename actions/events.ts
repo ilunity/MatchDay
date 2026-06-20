@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import { dateKey, parseDateKey } from "@/lib/dates";
 import { applyCoverFromFormData, type CoverUploadError } from "@/lib/cover";
 import { createEventSchema, updateEventSchema } from "@/lib/validations/event";
+import { setEventConfirmationSchema } from "@/lib/validations/confirmation";
 import { Event, type IEvent } from "@/models/Event";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
@@ -33,6 +34,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult> {
     title: formData.get("title"),
     description: formData.get("description") || undefined,
     requireAuth: formData.get("requireAuth") === "on",
+    confirmationMode: formData.get("confirmationMode") || "one_of",
     possibleDates: rawDates,
   });
 
@@ -55,6 +57,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult> {
     ownerId: session.user.id,
     possibleDates,
     requireAuth: parsed.data.requireAuth,
+    confirmationMode: parsed.data.confirmationMode,
   });
 
   const coverError = await applyCoverFromFormData(event, formData);
@@ -78,6 +81,7 @@ export async function updateEvent(formData: FormData): Promise<ActionResult> {
     title: formData.get("title"),
     description: formData.get("description") || undefined,
     requireAuth: false,
+    confirmationMode: formData.get("confirmationMode") || "one_of",
     possibleDates: rawDates,
   });
 
@@ -102,6 +106,18 @@ export async function updateEvent(formData: FormData): Promise<ActionResult> {
   event.title = parsed.data.title;
   event.description = parsed.data.description;
   event.possibleDates = parsed.data.possibleDates.map(parseDateKey);
+
+  const possibleKeys = new Set(
+    event.possibleDates.map((d: Date) => dateKey(new Date(d)))
+  );
+  event.confirmedDates = (event.confirmedDates ?? []).filter((d: Date) =>
+    possibleKeys.has(dateKey(new Date(d)))
+  );
+  event.confirmationMode = parsed.data.confirmationMode;
+  if (event.confirmedDates.length === 0) {
+    event.confirmedAt = undefined;
+  }
+
   await event.save();
 
   const coverError = await applyCoverFromFormData(event, formData);
@@ -113,6 +129,73 @@ export async function updateEvent(formData: FormData): Promise<ActionResult> {
   revalidatePath(`/e/${parsed.data.slug}`);
   revalidatePath(`/events/${parsed.data.slug}/edit`);
   redirect(`/e/${parsed.data.slug}`);
+}
+
+export async function setEventConfirmation(
+  formData: FormData
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Необходима авторизация" };
+  }
+
+  const rawDates = formData.getAll("confirmedDates").map(String);
+
+  const parsed = setEventConfirmationSchema.safeParse({
+    slug: formData.get("slug"),
+    confirmedDates: rawDates,
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.errors[0]?.message ?? "Ошибка валидации",
+    };
+  }
+
+  await connectDB();
+
+  const event = await Event.findOne({ slug: parsed.data.slug });
+  if (!event) {
+    return { success: false, error: "Мероприятие не найдено" };
+  }
+
+  if (event.ownerId.toString() !== session.user.id) {
+    return { success: false, error: "Нет доступа" };
+  }
+
+  const possibleKeys = new Set(
+    event.possibleDates.map((d: Date) => dateKey(new Date(d)))
+  );
+  const confirmedDates = parsed.data.confirmedDates
+    .filter((d) => possibleKeys.has(d))
+    .map(parseDateKey);
+
+  event.confirmedDates = confirmedDates;
+  if (confirmedDates.length === 0) {
+    event.confirmationMode = null;
+    event.set("confirmedAt", undefined);
+  } else {
+    event.confirmationMode = event.confirmationMode ?? "one_of";
+    event.confirmedAt = new Date();
+  }
+
+  try {
+    await event.save();
+  } catch (error) {
+    console.error("setEventConfirmation save failed:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Не удалось сохранить даты",
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/e/${parsed.data.slug}`);
+  revalidatePath(`/events/${parsed.data.slug}/edit`);
+
+  return { success: true, slug: parsed.data.slug };
 }
 
 export async function getEventForOwner(slug: string) {

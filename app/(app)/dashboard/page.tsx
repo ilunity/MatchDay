@@ -72,6 +72,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               title={event.title}
               createdAt={new Date(event.createdAt)}
               possibleDatesCount={event.possibleDates.length}
+              confirmedDatesCount={event.confirmedDates?.length ?? 0}
               requireAuth={event.requireAuth}
               isOwner={event.role === "owner"}
             />
