@@ -2,28 +2,41 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BarChart3, CalendarPlus, LayoutDashboard, Link2 } from "lucide-react";
 import { FeatureCard } from "@/components/feature-card";
+import { JsonLd } from "@/components/json-ld";
 import { auth } from "@/lib/auth";
+import { buildHomeJsonLd } from "@/lib/json-ld";
 import { ru } from "@/lib/i18n/ru";
 import {
   absoluteUrl,
+  buildHomeOgImages,
   defaultOpenGraph,
   defaultTwitter,
+  getOgImageUrls,
 } from "@/lib/metadata";
 import { Button } from "@/components/ui/button";
 
+const homeDescription = ru.og.homeDescription;
+const homeImages = buildHomeOgImages();
+const homeImageUrls = getOgImageUrls(homeImages);
+
 export const metadata: Metadata = {
-  title: ru.appName,
-  description: ru.og.homeDescription,
+  title: { absolute: ru.appName },
+  description: homeDescription,
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
   openGraph: {
     ...defaultOpenGraph,
     title: ru.appName,
-    description: ru.og.homeDescription,
+    description: homeDescription,
     url: absoluteUrl("/"),
+    images: homeImages,
   },
   twitter: {
     ...defaultTwitter,
     title: ru.appName,
-    description: ru.og.homeDescription,
+    description: homeDescription,
+    images: homeImageUrls,
   },
 };
 
@@ -31,8 +44,10 @@ export default async function HomePage() {
   const session = await auth();
 
   return (
-    <div className="container px-4 py-12 sm:py-20">
-      <section className="mx-auto max-w-3xl text-center">
+    <>
+      <JsonLd data={buildHomeJsonLd()} />
+      <div className="container px-4 py-12 sm:py-20">
+        <section className="mx-auto max-w-3xl text-center">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
           {ru.heroTitle}
         </h1>
@@ -69,9 +84,9 @@ export default async function HomePage() {
             </>
           )}
         </div>
-      </section>
+        </section>
 
-      <section className="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
+        <section className="mx-auto mt-16 grid max-w-4xl gap-6 sm:grid-cols-3">
         <FeatureCard
           variant="create"
           icon={CalendarPlus}
@@ -90,7 +105,8 @@ export default async function HomePage() {
           title={ru.features.results}
           description={ru.features.resultsDesc}
         />
-      </section>
-    </div>
+        </section>
+      </div>
+    </>
   );
 }

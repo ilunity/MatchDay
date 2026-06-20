@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { Providers } from "@/components/providers";
 import { defaultMetadata } from "@/lib/metadata";
@@ -23,10 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen overflow-x-hidden antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden antialiased`}>
         <Providers>
           <Header />
-          <main className="overflow-x-hidden">{children}</main>
+          <main className="flex-1 overflow-x-hidden">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>

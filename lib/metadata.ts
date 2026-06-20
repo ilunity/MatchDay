@@ -2,13 +2,36 @@ import type { Metadata } from "next";
 import { DEFAULT_COVER_ASPECT_RATIO } from "@/lib/image-constants";
 import { ru } from "@/lib/i18n/ru";
 import { computeEventOgHeight, resolveEventOgDescription } from "@/lib/og-event-shared";
-import { OG_IMAGE_SIZE } from "@/lib/og-image";
+import { getHomeOgImageSize, OG_IMAGE_SIZE } from "@/lib/og-image";
+
+let warnedAboutBaseUrl = false;
 
 export function getBaseUrl(): string {
-  return (
-    process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000"
-  );
+  const url =
+    process.env.APP_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+
+  if (
+    !warnedAboutBaseUrl &&
+    process.env.NODE_ENV === "production" &&
+    /localhost|127\.0\.0\.1/.test(url)
+  ) {
+    warnedAboutBaseUrl = true;
+    console.warn(
+      "[metadata] Set APP_URL to your public domain in production for correct SEO and OG URLs"
+    );
+  }
+
+  return url;
 }
+
+export const robotsNoIndex: NonNullable<Metadata["robots"]> = {
+  index: false,
+  follow: false,
+};
+
+export const privatePageMetadata: Metadata = {
+  robots: robotsNoIndex,
+};
 
 export function absoluteUrl(path: string): string {
   const base = getBaseUrl().replace(/\/$/, "");
@@ -75,6 +98,19 @@ export function truncateDescription(text: string, maxLength = 160): string {
   return `${trimmed.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
+export function buildHomeOgImages(): NonNullable<Metadata["openGraph"]>["images"] {
+  const { width, height } = getHomeOgImageSize();
+
+  return [
+    {
+      url: "/opengraph-image",
+      alt: ru.og.homeImageAlt,
+      width,
+      height,
+    },
+  ];
+}
+
 export const defaultOpenGraph: NonNullable<Metadata["openGraph"]> = {
   siteName: ru.appName,
   locale: "ru_RU",
@@ -87,7 +123,10 @@ export const defaultTwitter: NonNullable<Metadata["twitter"]> = {
 
 export const defaultMetadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
-  title: ru.appName,
+  title: {
+    default: ru.appName,
+    template: `%s | ${ru.appName}`,
+  },
   description: ru.description,
   icons: {
     icon: [

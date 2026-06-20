@@ -31,7 +31,7 @@ export function EventHeader({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={coverUrl}
-                alt={ru.cover}
+                alt={ru.og.eventImageAlt(title)}
                 className="h-auto w-full rounded-xl bg-muted"
               />
             </div>
