@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import { Footer } from "@/components/footer";
+import { ConditionalFooter } from "@/components/conditional-footer";
 import { Header } from "@/components/header";
 import { Providers } from "@/components/providers";
 import { defaultMetadata } from "@/lib/metadata";
@@ -28,7 +28,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           <main className="flex-1 overflow-x-hidden">{children}</main>
-          <Footer />
+          <ConditionalFooter />
         </Providers>
       </body>
     </html>
