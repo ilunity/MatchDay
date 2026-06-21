@@ -31,6 +31,17 @@ export const ru = {
   confirmPassword: "Подтвердите пароль",
   signInWithPassword: "Войти",
   credentialsSigninError: "Неверный логин или пароль",
+  loginIpLockedPrefix: "Слишком много попыток с вашего IP.",
+  loginAccountLockedPrefix: "Аккаунт временно заблокирован.",
+  loginIpLocked: (minutes: number) =>
+    `Слишком много попыток с вашего IP. Повторите через ${minutes} мин.`,
+  loginAccountLocked: (minutes: number) =>
+    `Аккаунт временно заблокирован. Повторите через ${minutes} мин.`,
+  loginLockedCountdown: (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `Повторить через ${mins}:${secs.toString().padStart(2, "0")}`;
+  },
   usernameTaken: "Этот логин уже занят",
   usernameMustDifferFromName: "Логин не должен совпадать с именем",
   passwordAlreadySet: "Пароль уже установлен",

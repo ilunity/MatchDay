@@ -18,6 +18,8 @@ import {
   setPasswordSchema,
 } from "@/lib/validations/auth";
 import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
+import { getPasswordLoginLockStatus as fetchPasswordLoginLockStatus } from "@/lib/login-lockout";
+import { usernameSchema } from "@/lib/validations/auth";
 import { EmailVerificationToken } from "@/models/EmailVerificationToken";
 import {
   User,
@@ -260,4 +262,18 @@ export async function getPasswordAuthFlags(): Promise<{
   ]);
 
   return { passwordLogin, passwordRegistration };
+}
+
+export async function getPasswordLoginLockStatus(username?: string): Promise<{
+  ipLockedUntil: string | null;
+  accountLockedUntil: string | null;
+}> {
+  const normalizedUsername = username?.trim().toLowerCase();
+  const accountUsername =
+    normalizedUsername &&
+    usernameSchema.safeParse(normalizedUsername).success
+      ? normalizedUsername
+      : undefined;
+
+  return fetchPasswordLoginLockStatus(accountUsername);
 }

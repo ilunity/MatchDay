@@ -17,6 +17,18 @@ import { isEnabled } from "@/lib/feature-flags";
 import { buildMagicLinkVerifyUrl, getAppUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
 import { verifyPassword } from "@/lib/password";
+import {
+  checkAccountLock,
+  checkIpLock,
+  clearLoginFailures,
+  getClientIp,
+  recordAccountFailure,
+  recordIpFailure,
+} from "@/lib/login-lockout";
+import {
+  AccountLoginLockedError,
+  IpLoginLockedError,
+} from "@/lib/login-lockout-errors";
 import { SmtpSendError } from "@/lib/smtp-send-error";
 import { ForeignEmailError } from "@/lib/foreign-email-error";
 import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
@@ -82,28 +94,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const username = parsed.data.username.toLowerCase();
+        const ip = await getClientIp();
+
+        const ipLock = await checkIpLock(ip);
+        if (ipLock.locked && ipLock.lockedUntil) {
+          throw new IpLoginLockedError(ipLock.lockedUntil);
+        }
+
         await connectDB();
-        const user = await User.findOne({
-          username: parsed.data.username.toLowerCase(),
-        });
+        const user = await User.findOne({ username });
 
-        if (!user?.passwordHash) {
-          return null;
+        if (user?.passwordHash) {
+          const accountLock = await checkAccountLock(username);
+          if (accountLock.locked && accountLock.lockedUntil) {
+            throw new AccountLoginLockedError(accountLock.lockedUntil);
+          }
         }
 
-        const valid = await verifyPassword(
-          parsed.data.password,
-          user.passwordHash
-        );
-        if (!valid) {
-          return null;
+        const passwordHash = user?.passwordHash;
+        const valid =
+          !!passwordHash &&
+          (await verifyPassword(parsed.data.password, passwordHash));
+
+        if (valid && user) {
+          await clearLoginFailures(ip, username);
+          return {
+            id: user._id.toString(),
+            name: user.name ?? null,
+            email: user.email ?? null,
+          };
         }
 
-        return {
-          id: user._id.toString(),
-          name: user.name ?? null,
-          email: user.email ?? null,
-        };
+        const ipFailure = await recordIpFailure(ip);
+        if (ipFailure.locked && ipFailure.lockedUntil) {
+          throw new IpLoginLockedError(ipFailure.lockedUntil);
+        }
+
+        if (user?.passwordHash) {
+          const accountFailure = await recordAccountFailure(username);
+          if (accountFailure.locked && accountFailure.lockedUntil) {
+            throw new AccountLoginLockedError(accountFailure.lockedUntil);
+          }
+        }
+
+        return null;
       },
     }),
     Nodemailer({

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Info } from "lucide-react";
+import { getPasswordLoginLockStatus } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,12 +16,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAuthErrorMessage } from "@/lib/auth-errors";
+import { getAuthErrorMessage, getLoginLockoutMessage } from "@/lib/auth-errors";
 import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
+import {
+  getActiveLockout,
+  parseLoginLockoutCode,
+  type ParsedLoginLockout,
+} from "@/lib/login-lockout-errors";
 import { ru } from "@/lib/i18n/ru";
 import { toast } from "sonner";
 
 const RESEND_COOLDOWN_SECONDS = 60;
+const LOCK_STATUS_DEBOUNCE_MS = 400;
 
 type LoginMode = "magic-link" | "password";
 
@@ -28,6 +35,17 @@ type LoginFormProps = {
   passwordLoginEnabled: boolean;
   passwordRegistrationEnabled: boolean;
 };
+
+function getLockoutSecondsRemaining(lockout: ParsedLoginLockout | null): number {
+  if (!lockout) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.ceil((lockout.lockedUntil.getTime() - Date.now()) / 1000)
+  );
+}
 
 export function LoginForm({
   passwordLoginEnabled,
@@ -44,7 +62,18 @@ export function LoginForm({
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [lockout, setLockout] = useState<ParsedLoginLockout | null>(null);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
   const [pending, startTransition] = useTransition();
+
+  const applyLockoutFromStatus = useCallback(
+    (ipLockedUntil: string | null, accountLockedUntil: string | null) => {
+      const active = getActiveLockout(ipLockedUntil, accountLockedUntil);
+      setLockout(active);
+      setLockoutSeconds(getLockoutSecondsRemaining(active));
+    },
+    []
+  );
 
   useEffect(() => {
     if (resendCooldown <= 0) {
@@ -57,6 +86,44 @@ export function LoginForm({
 
     return () => window.clearTimeout(timer);
   }, [resendCooldown]);
+
+  useEffect(() => {
+    if (mode !== "password" || !passwordLoginEnabled) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void getPasswordLoginLockStatus(username).then(
+        ({ ipLockedUntil, accountLockedUntil }) => {
+          applyLockoutFromStatus(ipLockedUntil, accountLockedUntil);
+        }
+      );
+    }, username ? LOCK_STATUS_DEBOUNCE_MS : 0);
+
+    return () => window.clearTimeout(timer);
+  }, [applyLockoutFromStatus, mode, passwordLoginEnabled, username]);
+
+  useEffect(() => {
+    if (!lockout || lockoutSeconds <= 0) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLockoutSeconds((current) => {
+        const next = Math.max(0, current - 1);
+        if (next === 0) {
+          void getPasswordLoginLockStatus(username).then(
+            ({ ipLockedUntil, accountLockedUntil }) => {
+              applyLockoutFromStatus(ipLockedUntil, accountLockedUntil);
+            }
+          );
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [applyLockoutFromStatus, lockout, lockoutSeconds, username]);
 
   function startResendCooldown() {
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
@@ -93,6 +160,10 @@ export function LoginForm({
     e.preventDefault();
     setError(null);
 
+    if (isPasswordLoginBlocked) {
+      return;
+    }
+
     startTransition(async () => {
       const result = await signIn("credentials", {
         username,
@@ -102,6 +173,16 @@ export function LoginForm({
       });
 
       if (result?.error) {
+        const parsedLockout = parseLoginLockoutCode(result.code);
+        if (parsedLockout) {
+          const seconds = getLockoutSecondsRemaining(parsedLockout);
+          setLockout(parsedLockout);
+          setLockoutSeconds(seconds);
+          const message = getLoginLockoutMessage(parsedLockout, seconds);
+          toast.error(message);
+          return;
+        }
+
         const message = getAuthErrorMessage(result.error, result.code);
         setError(message);
         toast.error(message);
@@ -142,6 +223,13 @@ export function LoginForm({
   }
 
   const showModeToggle = passwordLoginEnabled;
+  const isIpLocked = lockout?.type === "ip" && lockoutSeconds > 0;
+  const isAccountLocked = lockout?.type === "account" && lockoutSeconds > 0;
+  const isPasswordLoginBlocked = isIpLocked || isAccountLocked;
+  const lockoutMessage =
+    lockout && lockoutSeconds > 0
+      ? getLoginLockoutMessage(lockout, lockoutSeconds)
+      : null;
 
   return (
     <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
@@ -196,6 +284,8 @@ export function LoginForm({
                   onClick={() => {
                     setMode("magic-link");
                     setError(null);
+                    setLockout(null);
+                    setLockoutSeconds(0);
                   }}
                 >
                   {ru.loginWithMagicLink}
@@ -229,6 +319,7 @@ export function LoginForm({
                     required
                     autoComplete="username"
                     placeholder={ru.usernamePlaceholder}
+                    disabled={isIpLocked}
                   />
                 </div>
                 <div className="space-y-2">
@@ -241,11 +332,29 @@ export function LoginForm({
                     required
                     autoComplete="current-password"
                     placeholder={ru.passwordPlaceholder}
+                    disabled={isPasswordLoginBlocked}
                   />
                 </div>
+                {lockoutMessage && (
+                  <div className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm leading-relaxed text-destructive">
+                    <Info
+                      className="mt-0.5 h-4 w-4 shrink-0"
+                      aria-hidden
+                    />
+                    <p>{lockoutMessage}</p>
+                  </div>
+                )}
                 {error && <p className="text-sm text-destructive">{error}</p>}
-                <Button type="submit" className="w-full" disabled={pending}>
-                  {pending ? ru.loading : ru.signInWithPassword}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={pending || isPasswordLoginBlocked}
+                >
+                  {pending
+                    ? ru.loading
+                    : isPasswordLoginBlocked && lockoutMessage
+                      ? lockoutMessage
+                      : ru.signInWithPassword}
                 </Button>
               </form>
             ) : (
