@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
 
 export const authConfig = {
   pages: {
@@ -9,6 +10,14 @@ export const authConfig = {
     strategy: "jwt" as const,
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "nodemailer") {
+        if (!user.email || !isAllowedAuthEmail(user.email)) {
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;

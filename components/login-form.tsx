@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
 import { ru } from "@/lib/i18n/ru";
 import { toast } from "sonner";
 
@@ -65,6 +66,11 @@ export function LoginForm({
     e.preventDefault();
     setError(null);
 
+    if (!isAllowedAuthEmail(email)) {
+      setError(ru.foreignEmailNotAllowed);
+      return;
+    }
+
     startTransition(async () => {
       const result = await signIn("nodemailer", {
         email,
@@ -111,6 +117,11 @@ export function LoginForm({
     }
 
     setError(null);
+
+    if (!isAllowedAuthEmail(email)) {
+      setError(ru.foreignEmailNotAllowed);
+      return;
+    }
 
     startTransition(async () => {
       const result = await signIn("nodemailer", {
@@ -250,6 +261,7 @@ export function LoginForm({
                     autoComplete="email"
                     placeholder={ru.emailPlaceholder}
                   />
+                  <p className="text-sm text-muted-foreground">{ru.emailHint}</p>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" className="w-full" disabled={pending}>

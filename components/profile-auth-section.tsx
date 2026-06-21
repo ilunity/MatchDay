@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { requestEmailLink, setUserPassword } from "@/actions/auth";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,11 @@ export function ProfileAuthSection({
   function handleLinkEmail(e: React.FormEvent) {
     e.preventDefault();
     setLinkError(null);
+
+    if (!isAllowedAuthEmail(linkEmailValue)) {
+      setLinkError(ru.foreignEmailNotAllowed);
+      return;
+    }
 
     const formData = new FormData();
     formData.set("email", linkEmailValue);
@@ -119,6 +125,7 @@ export function ProfileAuthSection({
               autoComplete="email"
               placeholder={ru.emailPlaceholder}
             />
+            <p className="text-sm text-muted-foreground">{ru.emailHint}</p>
           </div>
           {linkError && <p className="text-sm text-destructive">{linkError}</p>}
           <Button type="submit" disabled={linkPending} variant="outline">

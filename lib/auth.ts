@@ -18,6 +18,8 @@ import { buildMagicLinkVerifyUrl, getAppUrl } from "@/lib/magic-link";
 import clientPromise from "@/lib/mongodb-client";
 import { verifyPassword } from "@/lib/password";
 import { SmtpSendError } from "@/lib/smtp-send-error";
+import { ForeignEmailError } from "@/lib/foreign-email-error";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
 import { credentialsLoginSchema } from "@/lib/validations/auth";
 import { User } from "@/models/User";
 
@@ -110,6 +112,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         : getSmtpServerConfig(),
       from: emailFromAddress(),
       async sendVerificationRequest({ identifier, url, provider }) {
+        if (!isAllowedAuthEmail(identifier)) {
+          throw new ForeignEmailError();
+        }
+
         const from = provider.from ?? emailFromAddress();
         const verifyUrl = buildMagicLinkVerifyUrl(url);
         const mode = isConsoleEmail() ? "console" : "smtp";

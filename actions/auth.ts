@@ -17,6 +17,7 @@ import {
   registerPasswordSchema,
   setPasswordSchema,
 } from "@/lib/validations/auth";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
 import { EmailVerificationToken } from "@/models/EmailVerificationToken";
 import {
   User,
@@ -219,6 +220,11 @@ export async function verifyEmailToken(
       await EmailVerificationToken.deleteOne({ _id: record._id });
     }
     return validationError(ru.emailVerificationInvalid);
+  }
+
+  if (!isAllowedAuthEmail(record.email)) {
+    await EmailVerificationToken.deleteOne({ _id: record._id });
+    return validationError(ru.foreignEmailNotAllowed);
   }
 
   const user = await User.findById(record.userId);

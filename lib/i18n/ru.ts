@@ -9,8 +9,12 @@ export const ru = {
   dashboard: "Мои мероприятия",
   createEvent: "Новое мероприятие",
   email: "Email",
-  emailPlaceholder: "you@example.com",
-  loginDescription: "Введите email — мы отправим ссылку для входа",
+  emailPlaceholder: "you@mail.ru",
+  emailHint: "Подойдёт любая российская почта",
+  foreignEmailNotAllowed:
+    "Используйте email в зоне .ru или .рф, либо почту Яндекс, VK (Mail.ru) или Rambler",
+  loginDescription:
+    "Введите email в зоне .ru или .рф — мы отправим ссылку для входа",
   loginWithPassword: "По логину и паролю",
   loginWithMagicLink: "По email",
   register: "Регистрация",
@@ -34,7 +38,8 @@ export const ru = {
   emailAlreadyLinked: "Email уже привязан",
   emailTaken: "Этот email уже используется",
   linkEmail: "Привязать email",
-  linkEmailHint: "Добавьте email для входа по ссылке и уведомлений",
+  linkEmailHint:
+    "Добавьте email в зоне .ru или .рф либо почту Яндекс, VK (Mail.ru) или Rambler",
   linkEmailSent: "Письмо с подтверждением отправлено",
   setPassword: "Установить пароль",
   setPasswordHint: "Добавьте логин и пароль для входа без email",

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isAllowedAuthEmail } from "@/lib/allowed-email-domains";
+import { ru } from "@/lib/i18n/ru";
 
 const usernameRegex = /^[a-z0-9_]{3,30}$/;
 
@@ -54,12 +56,15 @@ export const setPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const authEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Введите корректный email")
+  .refine(isAllowedAuthEmail, ru.foreignEmailNotAllowed);
+
 export const linkEmailSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email("Введите корректный email"),
+  email: authEmailSchema,
 });
 
 export type RegisterPasswordInput = z.infer<typeof registerPasswordSchema>;
