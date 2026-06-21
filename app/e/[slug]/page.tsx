@@ -16,12 +16,10 @@ import {
   robotsNoIndex,
   truncateDescription,
 } from "@/lib/metadata";
-import { buildEventJsonLd } from "@/lib/json-ld";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
 import { CompleteProfileForm } from "@/components/complete-profile-form";
 import { EventHeader } from "@/components/event-header";
 import { GuestNameForm } from "@/components/guest-name-form";
-import { JsonLd } from "@/components/json-ld";
 import { ShareLink } from "@/components/share-link";
 import { Button } from "@/components/ui/button";
 
@@ -52,10 +50,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    robots: robotsNoIndex,
     alternates: {
       canonical,
     },
-    ...(event.requireAuth ? { robots: robotsNoIndex } : {}),
     openGraph: {
       ...defaultOpenGraph,
       title,
@@ -123,7 +121,6 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <>
-      {!event.requireAuth && <JsonLd data={buildEventJsonLd(event)} />}
       <div className="container max-w-4xl px-4 py-6 md:py-8">
         <GuestNameForm eventSlug={slug} open={needsGuestName} />
         <CompleteProfileForm open={needsProfileName} />
