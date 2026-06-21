@@ -1,6 +1,6 @@
 # Деплой MatchDay
 
-MatchDay разворачивается на VPS как Docker Compose стек: app + MongoDB + MinIO.
+MatchDay разворачивается на VPS как Docker Compose стек: app + MongoDB + MinIO + mongo-express.
 
 ## Требования
 
@@ -13,7 +13,7 @@ MatchDay разворачивается на VPS как Docker Compose стек:
 
 | Файл | Назначение |
 |------|------------|
-| `docker-compose.yml` | Базовый стек: app + MongoDB + MinIO |
+| `docker-compose.yml` | Базовый стек: app + MongoDB + MinIO + mongo-express |
 | `docker-compose.local.yml` | Override для локальной разработки |
 | `docker/Dockerfile` | Production-сборка Next.js (standalone) |
 | `docker/Dockerfile.dev` | Dev-сборка с hot reload |
@@ -48,6 +48,11 @@ APP_URL=https://matchday.example.com
 
 MONGODB_URI=mongodb://mongodb:27017/matchday
 
+MONGO_EXPRESS_USER=<логин для Basic Auth>
+MONGO_EXPRESS_PASSWORD=<сильный пароль>
+MONGO_EXPRESS_COOKIE_SECRET=<openssl rand -hex 32>
+MONGO_EXPRESS_SESSION_SECRET=<openssl rand -hex 32>
+
 MINIO_ENDPOINT=minio
 MINIO_PORT=9000
 MINIO_ACCESS_KEY=<access key>
@@ -78,9 +83,41 @@ docker compose up -d --build
 
 ### 4. Настройте reverse proxy
 
-Сервис `app` слушает порт **3000** и проброшен как `127.0.0.1:3000` — проксируйте домен на этот адрес.
+Сервис `app` слушает порт **3000** и проброшен как `127.0.0.1:3000` — проксируйте домен приложения на этот адрес.
+
+Сервис `mongo-express` слушает порт **8081** и проброшен как `127.0.0.1:8081` — проксируйте **отдельный** домен на этот адрес (например `mongo-admin.example.com`).
+
+Пример Caddyfile:
+
+```caddy
+matchday.example.com {
+    reverse_proxy 127.0.0.1:3000
+}
+
+mongo-admin.example.com {
+    reverse_proxy 127.0.0.1:8081
+}
+```
+
+После изменения конфига: `caddy reload`.
 
 MongoDB и MinIO работают во **внутренней** сети `matchday` без публичных портов. MinIO bucket инициализируется контейнером `minio-init` при первом запуске.
+
+**Безопасность mongo-express:**
+
+- Задайте сильный `MONGO_EXPRESS_PASSWORD` — UI защищён Basic Auth
+- Не публикуйте домен mongo-express публично
+- По желанию ограничьте доступ по IP в Caddy (VPN/офис):
+
+```caddy
+mongo-admin.example.com {
+    @allowed remote_ip 203.0.113.0/24
+    handle @allowed {
+        reverse_proxy 127.0.0.1:8081
+    }
+    respond "Forbidden" 403
+}
+```
 
 ### 5. Persistent volumes
 
@@ -125,6 +162,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 
 Приложение: http://localhost:3000  
 MongoDB: localhost:27017  
+Mongo Express: http://localhost:8081  
 MinIO API: http://localhost:9000  
 MinIO Console: http://localhost:9001  
 
@@ -146,3 +184,6 @@ MinIO Console: http://localhost:9001
 | 500 при загрузке обложки | Проверьте MINIO_* env, что minio-init отработал |
 | Redirect loop на login | `NEXTAUTH_URL` должен совпадать с доменом |
 | MongoDB connection refused | Дождитесь healthcheck mongodb, проверьте `MONGODB_URI` |
+| mongo-express 401 Unauthorized | Проверьте `MONGO_EXPRESS_USER` и `MONGO_EXPRESS_PASSWORD` в `.env`, перезапустите контейнер |
+| mongo-express недоступен с домена | DNS A-запись на VPS; Caddy проксирует на `127.0.0.1:8081`; `docker compose ps mongo-express` |
+| mongo-express не стартует | Заполните все `MONGO_EXPRESS_*` в `.env`; смотрите `docker compose logs mongo-express` |
